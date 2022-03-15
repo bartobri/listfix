@@ -178,7 +178,7 @@ if (re.search(list_email, from_line)):
 
 email_filtered.append(f"To: {list_email}\n")
 email_filtered.append(f"From: \"{sender_name} via {list_name}\" <{list_email}>\n")
-email_filtered.append(f"Reply-To: {list_email}, {sender}\n")
+email_filtered.append(f"Reply-To: {list_email}\n")
 
 exclude_headers = ["Subject", "Content-[^:]+", "MIME-Version"]
 email_filtered.extend(strip_headers(email, exclude_headers))
