@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import sys
+import socket
+import pwd
 import os
 import re
 
@@ -104,6 +106,9 @@ re_email = re.compile("([^<>\"\s]+)@(\S+\.[^<>\"\s]+)")
 re_sender_name = re.compile("^From:\s+\"?([^<>\"]*)\"?\s*<?(\S*)@\S+\.\S+>?$")
 re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.IGNORECASE)
 
+fqdn = socket.getfqdn()
+username = pwd.getpwuid(os.getuid())[0]
+
 sender = None
 recipient = None
 to_line = None
@@ -169,7 +174,8 @@ else:
 
 ## If this is already filtered, add skip header and resubmit
 
-if (re.search(list_email, from_line)):
+listfix_email = f"{username}@{fqdn}"
+if (sender == listfix_email):
     email.insert(0, "Listfix-Skip-Filter: yes\n")
     send_email(list_email, email)
     exit()
