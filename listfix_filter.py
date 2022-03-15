@@ -78,6 +78,21 @@ def send_email(to_email, email_contents):
         p.write(line)
     p.close()
 
+def log_info(sender, recipient, lines):
+
+    f = open("/tmp/listfix_log.txt", "a")
+    f.write(f"Postfix Sender: {sender}\n")
+    f.write(f"Postfix Recipient: {recipient}\n")
+
+    for line in lines:
+        if (re_header_end.match(line)):
+                break
+
+        f.write(line)
+
+    f.write("\n")
+    f.close()
+
 
 ########################
 ## Main Program
@@ -99,6 +114,7 @@ list_name = None
 list_domain = None
 email = []
 email_filtered = []
+logging = True
 
 ## Get/check args
 
@@ -108,13 +124,17 @@ if (args_ok()):
 else:
     raise ValueError('Missing or Invalid Arguments')
 
-
 ## Get email content
 
 for line in sys.stdin:
     email.append(line)
 if (len(email) == 0):
     raise ValueError('Missing Piped Data')
+
+## Logging
+
+if (logging):
+    log_info(sender, recipient, email)
 
 ## Check if this is an auto-reply
 
@@ -150,7 +170,7 @@ else:
 ## If this is already filtered, add skip header and resubmit
 
 if (re.search(list_email, from_line)):
-    email.insert(0, "List-Skip-Filter: yes\n")
+    email.insert(0, "Listfix-Skip-Filter: yes\n")
     send_email(list_email, email)
     exit()
 
