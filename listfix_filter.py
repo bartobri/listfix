@@ -12,7 +12,7 @@ import re
 
 def args_ok():
     if (len(sys.argv) > 2):
-        if (not re_email.match(sys.argv[1]) or not re_email.match(sys.argv[2])):
+        if (not re_email_arg.match(sys.argv[1]) or not re_email_arg.match(sys.argv[2])):
             return False
         else:
             return True
@@ -100,9 +100,15 @@ def log_info(sender, recipient, lines):
 ## Main Program
 ########################
 
+email_lists = [ "test@cityviewgr.com",
+                "board@cityviewgr.com",
+                "association@cityviewgr.com",
+                "residents@cityviewgr.com" ]
+
 re_header_cont = re.compile("^\s+\S+")
 re_header_end = re.compile("^\s*$")
-re_email = re.compile("([^<>\"\s]+)@(\S+\.[^<>\"\s]+)")
+re_email_arg = re.compile("([^<>\"\s]+)@(\S+\.[^<>\"\s]+)")
+re_email_to = re.compile("[<, ](([^<>\"\s\,]+)@([^<>\"\s\,]+\.[^<>\"\s\,]+))")
 re_sender_name = re.compile("^From:\s+\"?([^<>\"]*)\"?\s*<?(\S*)@\S+\.\S+>?$")
 re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.IGNORECASE)
 
@@ -156,11 +162,21 @@ if (not to_line or not from_line):
 
 ## Get list info
 
-if (re_email.search(to_line)):
-    results = re_email.search(to_line)
-    list_email = results.group(0)
-    list_name = results.group(1)
-    list_domain = results.group(2)
+if (re_email_to.search(to_line)):
+    results = re_email_to.findall(to_line)
+    for r in results:
+        for email_list in email_lists:
+            print(f"Checking result = {r} list = {email_list}")
+            if (r[0] == email_list):
+                list_email = r[0]
+                list_name = r[1]
+                list_domain = r[2]
+            if (list_email):
+                break
+        if (list_email):
+            break
+    if (not list_email):
+        raise ValueError('No email list recipient found.')
 else:
     raise ValueError('Can not determine email list.')
 
