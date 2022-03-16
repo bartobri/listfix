@@ -81,11 +81,13 @@ def send_email(to_email, email_contents):
         p.write(line)
     p.close()
 
-def log_info(sender, recipient, lines):
+def log_info(sender, recipients, lines):
 
     f = open("/tmp/listfix_log.txt", "a")
     f.write(f"Postfix Sender: {sender}\n")
-    f.write(f"Postfix Recipient: {recipient}\n")
+
+    for recipient in recipients:
+        f.write(f"Postfix Recipient: {recipient}\n")
 
     for line in lines:
         if (re_header_end.match(line)):
@@ -125,7 +127,7 @@ fqdn = socket.getfqdn()
 username = pwd.getpwuid(os.getuid())[0]
 
 sender = None
-recipient = None
+recipients = []
 to_line = None
 from_line = None
 sender_name = None
@@ -140,7 +142,8 @@ logging = True
 
 if (args_ok()):
     sender = sys.argv[1]
-    recipient = sys.argv[2]
+    for arg in sys.argv[2:]:
+        recipients.append(arg)
 else:
     raise ValueError('Missing or Invalid Arguments')
 
@@ -156,7 +159,7 @@ if (len(email) == 0):
 if (logging):
     for arg in sys.argv[1:]:
         log_line(arg)
-    log_info(sender, recipient, email)
+    log_info(sender, recipients, email)
 
 ## Check if this is an auto-reply
 
