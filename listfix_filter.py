@@ -12,10 +12,11 @@ import re
 
 def args_ok():
     if (len(sys.argv) > 2):
-        if (not re_email_arg.match(sys.argv[1]) or not re_email_arg.match(sys.argv[2])):
-            return False
-        else:
-            return True
+        for arg in sys.argv[1:]:
+            if (not re_email_arg.match(arg) or not re_email_arg.match(arg)):
+              return False
+            else:
+              return True
     else:
         return False
 
@@ -95,6 +96,14 @@ def log_info(sender, recipient, lines):
     f.write("\n")
     f.close()
 
+def log_line(line):
+
+    line = line.rstrip()
+
+    f = open("/tmp/listfix_log.txt", "a")
+    f.write(f"[Log Line] {line}\n")
+    f.close()
+
 
 ########################
 ## Main Program
@@ -145,6 +154,8 @@ if (len(email) == 0):
 ## Logging
 
 if (logging):
+    for arg in sys.argv[1:]:
+        log_line(arg)
     log_info(sender, recipient, email)
 
 ## Check if this is an auto-reply
