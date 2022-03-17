@@ -108,7 +108,6 @@ def strip_headers(lines, exclude):
 
 def send_email(to_email, email_contents):
     p = os.popen(f"/usr/sbin/sendmail -G -i {to_email}", "w")
-    p.write(f"To: {to_email}\n")
     for line in email_contents:
         p.write(line)
     p.close()
@@ -212,7 +211,7 @@ else:
 
 email_filtered.append(f"From: \"{sender_name} via {list_name}\" <{list_email}>\n")
 email_filtered.append(f"Reply-To: {list_email}\n")
-exclude_headers = ["Subject", "Content-[^:]+", "MIME-Version"]
+exclude_headers = ["To", "Subject", "Content-[^:]+", "MIME-Version"]
 email_filtered.extend(strip_headers(email, exclude_headers))
 
 ## Send emails
