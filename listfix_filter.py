@@ -7,6 +7,37 @@ import os
 import re
 
 ########################
+## Variable Defs
+########################
+
+email_lists = [ "test@cityviewgr.com",
+                "board@cityviewgr.com",
+                "association@cityviewgr.com",
+                "residents@cityviewgr.com" ]
+
+re_header_cont = re.compile("^\s+\S+")
+re_header_end = re.compile("^\s*$")
+re_email_arg = re.compile("([^<>\"\s]+)@(\S+\.[^<>\"\s]+)")
+re_email_to = re.compile("[<, ](([^<>\"\s\,]+)@([^<>\"\s\,]+\.[^<>\"\s\,]+))")
+re_sender_name = re.compile("^From:\s+\"?([^<>\"]*)\"?\s*<?(\S*)@\S+\.\S+>?$")
+re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.IGNORECASE)
+
+fqdn = socket.getfqdn()
+username = pwd.getpwuid(os.getuid())[0]
+
+sender = None
+recipients = []
+to_line = None
+from_line = None
+sender_name = None
+list_email = None
+list_name = None
+list_domain = None
+email = []
+email_filtered = []
+logging = True
+
+########################
 ## Function Defs
 ########################
 
@@ -77,6 +108,7 @@ def strip_headers(lines, exclude):
 
 def send_email(to_email, email_contents):
     p = os.popen(f"/usr/sbin/sendmail -G -i {to_email}", "w")
+    p.write(f"To: {to_email}\n")
     for line in email_contents:
         p.write(line)
     p.close()
@@ -110,33 +142,6 @@ def log_line(line):
 ########################
 ## Main Program
 ########################
-
-email_lists = [ "test@cityviewgr.com",
-                "board@cityviewgr.com",
-                "association@cityviewgr.com",
-                "residents@cityviewgr.com" ]
-
-re_header_cont = re.compile("^\s+\S+")
-re_header_end = re.compile("^\s*$")
-re_email_arg = re.compile("([^<>\"\s]+)@(\S+\.[^<>\"\s]+)")
-re_email_to = re.compile("[<, ](([^<>\"\s\,]+)@([^<>\"\s\,]+\.[^<>\"\s\,]+))")
-re_sender_name = re.compile("^From:\s+\"?([^<>\"]*)\"?\s*<?(\S*)@\S+\.\S+>?$")
-re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.IGNORECASE)
-
-fqdn = socket.getfqdn()
-username = pwd.getpwuid(os.getuid())[0]
-
-sender = None
-recipients = []
-to_line = None
-from_line = None
-sender_name = None
-list_email = None
-list_name = None
-list_domain = None
-email = []
-email_filtered = []
-logging = True
 
 ## Get/check args
 
@@ -199,24 +204,18 @@ else:
 if (re_sender_name.match(from_line)):
     results = re_sender_name.search(from_line)
     sender_name = results.group(1) if results.group(1) else results.group(2)
+    sender_name = sender_name.rstrip()
 else:
     raise ValueError('Can Not Determine Sender Name')
 
-## If this is already filtered, add skip header and resubmit
-
-listfix_email = f"{username}@{fqdn}"
-if (sender == listfix_email):
-    email.insert(0, "Listfix-Skip-Filter: yes\n")
-    send_email(list_email, email)
-    exit()
-
 ## Costruct Filtered Email
 
-email_filtered.append(f"To: {list_email}\n")
 email_filtered.append(f"From: \"{sender_name} via {list_name}\" <{list_email}>\n")
 email_filtered.append(f"Reply-To: {list_email}\n")
-
 exclude_headers = ["Subject", "Content-[^:]+", "MIME-Version"]
 email_filtered.extend(strip_headers(email, exclude_headers))
 
-send_email(list_email, email_filtered)
+## Send emails
+
+for recipient in recipients:
+    send_email(recipient, email_filtered)
