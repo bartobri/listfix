@@ -24,6 +24,7 @@ re_header_cont = re.compile("^\s+\S+")
 re_header_end = re.compile("^\s*$")
 re_email_arg = re.compile("([^<>\"\s]+)@(\S+\.[^<>\"\s]+)")
 re_email_to = re.compile("[<, ](([^<>\"\s\,]+)@([^<>\"\s\,]+\.[^<>\"\s\,]+))")
+re_email_parts = re.compile("(\S+)@(\S+\.\S+)")
 re_sender_name = re.compile("^From:\s+\"?([^<>\"]*)\"?\s*<?(\S*)@\S+\.\S+>?$")
 re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.IGNORECASE)
 
@@ -33,8 +34,10 @@ username = pwd.getpwuid(os.getuid())[0]
 sender = None
 sender_domain = None
 recipients = []
+header_recipients = []
 to_line = None
 from_line = None
+cc_line = None
 sender_name = None
 list_email = None
 list_name = None
@@ -60,7 +63,7 @@ def args_ok():
 def get_header(lines, header):
     rval = None
 
-    re_header = re.compile("^" + header + ": ")
+    re_header = re.compile("^" + header + ": ", re.IGNORECASE)
 
     header = header.rstrip()
     if (header[-1] == ":"):
@@ -103,7 +106,7 @@ def strip_headers(lines, exclude):
 
             append_next = False
             for ex in exclude:
-                if (re.match("^" + ex + ": ", line)):
+                if (re.match("^" + ex + ": ", line, re.IGNORECASE)):
                     rval.append(line)
                     append_next = True
                     break
@@ -180,31 +183,45 @@ auto_sub_line = get_header(email, "Auto-Submitted")
 if (auto_sub_line and re_auto_reply.match(auto_sub_line)):
     exit()
 
-## Get To: and From: lines
+## Get To:, From:, and Cc: lines
 
 to_line = get_header(email, "To")
 from_line = get_header(email, "From")
+cc_line = get_header(email, "Cc")
 if (not to_line or not from_line):
     raise ValueError('Can not find To or From value in headers.')
 
-## Get list info
+## Get all recipients in the header fields (To and Cc)
 
 if (re_email_to.search(to_line)):
     results = re_email_to.findall(to_line)
     for r in results:
-        for email_list in email_lists:
-            if (r[0] == email_list):
-                list_email = r[0]
-                list_name = r[1]
-                list_domain = r[2]
-            if (list_email):
-                break
+        header_recipients.append(r[0])
+else:
+    raise ValueError('Unable to find recipients in To header field.')
+
+if (cc_line):
+    if (re_email_to.search(cc_line)):
+        results = re_email_to.findall(cc_line)
+        for r in results:
+            header_recipients.append(r[0])
+    else:
+        raise ValueError('Unable to find recipients in Cc header field.')
+
+## Get list info
+
+for r in header_recipients:
+    for email_list in email_lists:
+        if (r == email_list):
+            list_email = r
+            list_name = re_email_parts.search(r).group(1)
+            list_domain = re_email_parts.search(r).group(2)
         if (list_email):
             break
-    if (not list_email):
-        raise ValueError('No email list recipient found.')
-else:
-    raise ValueError('Can not determine email list.')
+    if (list_email):
+        break
+if (not list_email):
+    raise ValueError('No email list recipient found.')
 
 ## If local sender, handle non-list recipients
 
@@ -231,7 +248,7 @@ else:
 
 email_filtered.append(f"From: \"{sender_name} via {list_name}\" <{list_email}>\n")
 email_filtered.append(f"Reply-To: {list_email}\n")
-exclude_headers = ["To", "Subject", "Content-[^:]+", "MIME-Version"]
+exclude_headers = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"]
 email_filtered.extend(strip_headers(email, exclude_headers))
 
 ## Send emails
