@@ -10,7 +10,12 @@ import re
 ## Variable Defs
 ########################
 
+local_domains = [ "cityviewgr.com",
+                  "brianbarto.info" ]
+
 email_lists = [ "test@cityviewgr.com",
+                "test2@cityviewgr.com",
+                "test3@cityviewgr.com",
                 "board@cityviewgr.com",
                 "association@cityviewgr.com",
                 "residents@cityviewgr.com" ]
@@ -26,6 +31,7 @@ fqdn = socket.getfqdn()
 username = pwd.getpwuid(os.getuid())[0]
 
 sender = None
+sender_domain = None
 recipients = []
 to_line = None
 from_line = None
@@ -146,8 +152,11 @@ def log_line(line):
 
 if (args_ok()):
     sender = sys.argv[1]
+    sender_domain = re_email_arg.match(sender).group(2)
     for arg in sys.argv[2:]:
         recipients.append(arg)
+    if (not sender or not sender_domain or len(recipients) == 0):
+        raise ValueError('Missing or Invalid Arguments')
 else:
     raise ValueError('Missing or Invalid Arguments')
 
@@ -184,7 +193,6 @@ if (re_email_to.search(to_line)):
     results = re_email_to.findall(to_line)
     for r in results:
         for email_list in email_lists:
-            print(f"Checking result = {r} list = {email_list}")
             if (r[0] == email_list):
                 list_email = r[0]
                 list_name = r[1]
@@ -197,6 +205,18 @@ if (re_email_to.search(to_line)):
         raise ValueError('No email list recipient found.')
 else:
     raise ValueError('Can not determine email list.')
+
+## If local sender, handle non-list recipients
+
+if (sender_domain in local_domains):
+    if (re_email_to.search(to_line)):
+        results = re_email_to.findall(to_line)
+        for r in results:
+            if (r[0] not in email_lists and r[0] in recipients):
+                send_email(r[0], email)
+                recipients.remove(r[0])
+    else:
+        raise ValueError('Can not determine To email address.')
 
 ## Get Sender Name
 
