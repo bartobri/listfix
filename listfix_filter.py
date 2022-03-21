@@ -278,7 +278,7 @@ else:
 email_filtered.append(f"From: \"{sender_name} via {list_name}\" <{list_email}>\n")
 email_filtered.append(f"Reply-To: {list_email}\n")
 exclude_headers = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"]
-email_filtered.extend(add_author_info(strip_headers(email, exclude_headers), sender_name, sender))
+email_filtered.extend(strip_headers(email, exclude_headers))
 
 ## Send emails
 
