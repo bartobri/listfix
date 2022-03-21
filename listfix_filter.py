@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 
 import sys
-import socket
-import pwd
 import os
 import re
 
@@ -10,15 +8,99 @@ import re
 ## Variable Defs
 ########################
 
-local_domains = [ "cityviewgr.com",
-                  "brianbarto.info" ]
+local_domains = [
+    "cityviewgr.com",
+    "brianbarto.info"
+]
 
-email_lists = [ "test@cityviewgr.com",
-                "test2@cityviewgr.com",
-                "test3@cityviewgr.com",
-                "board@cityviewgr.com",
-                "association@cityviewgr.com",
-                "residents@cityviewgr.com" ]
+email_lists = {
+    "test@cityviewgr.com" : [
+        "bartobrian@gmail.com",
+        "bartobrian@outlook.com",
+    ],
+    "board@cityviewgr.com" : [
+        "ksteindler@sbcglobal.net",
+        "Matt.Clarke@firstcb.com",
+        "bartobrian@gmail.com",
+        "matt@sbbllaw.com",
+        "michael_sytsma@keybank.com",
+        "Gail.Lopez@colliers.com"
+    ],
+    "association@cityviewgr.com" : [
+        "matt.clarke@firstcb.com",
+        "Mark.Brant@firstcb.com",
+        "jon@parklandgr.com",
+        "mike@sbbllaw.com",
+        "matt@sbbllaw.com",
+        "heath@sbbllaw.com",
+        "peterman@sbbllaw.com",
+        "gary@sbbllaw.com",
+        "cahaskins@me.com",
+        "ccyoung@me.com",
+        "grhsrent@gmail.com",
+        "michael.clarke123@yahoo.com",
+        "anja.harmon@hubinternational.com",
+        "rickganzi@gmail.com",
+        "marissamartz@hotmail.com",
+        "junshenmsu@gmail.com",
+        "curticas@mail.gvsu.edu",
+        "paulboehms@gmail.com",
+        "erharte@comcast.net",
+        "Brich8b@gmail.com",
+        "armbrecht2002@yahoo.com",
+        "jgrotenrath@toolingsystemsgroup.com",
+        "abagge05@gmail.com",
+        "bartobrian@gmail.com",
+        "LSamrick@yahoo.com",
+        "Kelly.Rodenhouse@gmail.com",
+        "alex@lgwd.net",
+        "sara@lgwd.net",
+        "tim@asco-components.com",
+        "trcrpn@aol.com",
+        "thegrimmlife@gmail.com",
+        "dmcritchell@yahoo.com",
+        "alissa.gramajo@yahoo.com",
+        "jonathonperkins22@yahoo.com",
+        "barnaclebob@gmail.com",
+        "steindler@sbcglobal.net",
+        "ksteindler@sbcglobal.net",
+        "mfsytsma@yahoo.com",
+        "mgordon1450@gmail.com"
+    ],
+    "residents@cityviewgr.com" : [
+        "cahaskins@me.com",
+        "ccyoung@me.com",
+        "grhsrent@gmail.com",
+        "streeterkelsei@gmail.com",
+        "drewprescottdesign@gmail.com",
+        "amandaw1190@gmail.com",
+        "rickganzi@gmail.com",
+        "marissamartz@hotmail.com",
+        "junshenmsu@gmail.com",
+        "curticas@mail.gvsu.edu",
+        "paulboehms@gmail.com",
+        "erharte@comcast.net",
+        "Brich8b@gmail.com",
+        "armbrecht2002@yahoo.com",
+        "jgrotenrath@toolingsystemsgroup.com",
+        "abagge05@gmail.com",
+        "bartobrian@gmail.com",
+        "LSamrick@yahoo.com",
+        "Kelly.Rodenhouse@gmail.com",
+        "alex@lgwd.net",
+        "sara@lgwd.net",
+        "tim@asco-components.com",
+        "trcrpn@aol.com",
+        "thegrimmlife@gmail.com",
+        "dmcritchell@yahoo.com",
+        "danny693@gmail.com",
+        "barnaclebob@gmail.com",
+        "steindler@sbcglobal.net",
+        "ksteindler@sbcglobal.net",
+        "mfsytsma@yahoo.com",
+        "mgordon1450@gmail.com"
+    ]
+}
 
 re_header_cont = re.compile("^\s+\S+")
 re_header_end = re.compile("^\s*$")
@@ -28,20 +110,11 @@ re_email_parts = re.compile("(\S+)@(\S+\.\S+)")
 re_sender_name = re.compile("^From:\s+\"?([^<>\"]*)\"?\s*<?(\S*)@\S+\.\S+>?$")
 re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.IGNORECASE)
 
-fqdn = socket.getfqdn()
-username = pwd.getpwuid(os.getuid())[0]
-
 sender = None
-sender_domain = None
-recipients = []
-header_recipients = []
-to_line = None
-from_line = None
-cc_line = None
-sender_name = None
 list_email = None
 list_name = None
 list_domain = None
+sender_name = None
 email = []
 email_filtered = []
 logging = True
@@ -121,13 +194,11 @@ def send_email(to_email, email_contents):
         p.write(line)
     p.close()
 
-def log_info(sender, recipients, lines):
+def log_info(sender, recipient, lines):
 
     f = open("/tmp/listfix_log.txt", "a")
     f.write(f"Postfix Sender: {sender}\n")
-
-    for recipient in recipients:
-        f.write(f"Postfix Recipient: {recipient}\n")
+    f.write(f"Postfix Recipient: {recipient}\n")
 
     for line in lines:
         if (re_header_end.match(line)):
@@ -155,10 +226,8 @@ def log_line(line):
 
 if (args_ok()):
     sender = sys.argv[1]
-    sender_domain = re_email_arg.match(sender).group(2)
-    for arg in sys.argv[2:]:
-        recipients.append(arg)
-    if (not sender or not sender_domain or len(recipients) == 0):
+    list_email = sys.argv[2]
+    if (not sender or not list_email):
         raise ValueError('Missing or Invalid Arguments')
 else:
     raise ValueError('Missing or Invalid Arguments')
@@ -175,7 +244,7 @@ if (len(email) == 0):
 if (logging):
     for arg in sys.argv[1:]:
         log_line(arg)
-    log_info(sender, recipients, email)
+    log_info(sender, list_email, email)
 
 ## Check if this is an auto-reply
 
@@ -183,75 +252,35 @@ auto_sub_line = get_header(email, "Auto-Submitted")
 if (auto_sub_line and re_auto_reply.match(auto_sub_line)):
     exit()
 
-## Get To:, From:, and Cc: lines
+## Verify list_email is a known list
 
-to_line = get_header(email, "To")
-from_line = get_header(email, "From")
-cc_line = get_header(email, "Cc")
-if (not to_line or not from_line):
-    raise ValueError('Can not find To or From value in headers.')
+if (list_email not in email_lists.keys()):
+    raise ValueError(f"Undefined Email List: {list_email}")
 
-## Get all recipients in the header fields (To and Cc)
-
-if (re_email_to.search(to_line)):
-    results = re_email_to.findall(to_line)
-    for r in results:
-        header_recipients.append(r[0])
-else:
-    raise ValueError('Unable to find recipients in To header field.')
-
-if (cc_line):
-    if (re_email_to.search(cc_line)):
-        results = re_email_to.findall(cc_line)
-        for r in results:
-            header_recipients.append(r[0])
-    else:
-        raise ValueError('Unable to find recipients in Cc header field.')
-
-## Get list info
-
-for r in header_recipients:
-    for email_list in email_lists:
-        if (r == email_list):
-            list_email = r
-            list_name = re_email_parts.search(r).group(1)
-            list_domain = re_email_parts.search(r).group(2)
-        if (list_email):
-            break
-    if (list_email):
-        break
-if (not list_email):
-    raise ValueError('No email list recipient found.')
-
-## If local sender, handle non-list recipients
-
-if (sender_domain in local_domains):
-    if (re_email_to.search(to_line)):
-        results = re_email_to.findall(to_line)
-        for r in results:
-            if (r[0] not in email_lists and r[0] in recipients):
-                send_email(r[0], email)
-                recipients.remove(r[0])
-    else:
-        raise ValueError('Can not determine To email address.')
+list_name = re_email_parts.search(list_email).group(1)
+list_domain = re_email_parts.search(list_email).group(2)
 
 ## Get Sender Name
 
-if (re_sender_name.match(from_line)):
-    results = re_sender_name.search(from_line)
-    sender_name = results.group(1) if results.group(1) else results.group(2)
-    sender_name = sender_name.rstrip()
+from_line = get_header(email, "From")
+if (from_line):
+    if (re_sender_name.match(from_line)):
+        results = re_sender_name.search(from_line)
+        sender_name = results.group(1) if results.group(1) else results.group(2)
+        sender_name = sender_name.rstrip()
+    else:
+        raise ValueError('Can Not Determine Sender Name')
 else:
-    raise ValueError('Can Not Determine Sender Name')
+    raise ValueError('Can Not Find \'From\' Line in Email')
 
 ## Costruct Filtered Email
 
 email_filtered.append(f"From: \"{sender_name} via {list_name}\" <{list_email}>\n")
 email_filtered.append(f"Reply-To: {list_email}\n")
 exclude_headers = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"]
-email_filtered.extend(strip_headers(email, exclude_headers))
+email_filtered.extend(add_author_info(strip_headers(email, exclude_headers), sender_name, sender))
 
 ## Send emails
 
-for recipient in recipients:
+for recipient in email_lists[list_email]:
     send_email(recipient, email_filtered)
