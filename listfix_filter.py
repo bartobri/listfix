@@ -276,7 +276,10 @@ else:
 ## Costruct Filtered Email
 
 email_filtered.append(f"From: \"{sender_name} via {list_name}\" <{list_email}>\n")
-email_filtered.append(f"Reply-To: {list_email}\n")
+if (sender not in email_lists[list_email]):
+    email_filtered.append(f"Reply-To: {list_email}, {sender}\n")
+else:
+    email_filtered.append(f"Reply-To: {list_email}\n")
 exclude_headers = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"]
 email_filtered.extend(strip_headers(email, exclude_headers))
 
