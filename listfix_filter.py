@@ -16,7 +16,7 @@ local_domains = [
 email_lists = {
     "test@cityviewgr.com" : [
         "bartobrian@gmail.com",
-        "bartobrian@outlook.com",
+        "bartobrian@outlook.com"
     ],
     "board@cityviewgr.com" : [
         "ksteindler@sbcglobal.net",
@@ -280,7 +280,12 @@ email_filtered.append(f"Reply-To: {list_email}\n")
 exclude_headers = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"]
 email_filtered.extend(strip_headers(email, exclude_headers))
 
+## Create recipient list
+
+recipients = email_lists[list_email]
+recipients.remove(sender)
+
 ## Send emails
 
-for recipient in email_lists[list_email]:
+for recipient in recipients:
     send_email(recipient, email_filtered)
