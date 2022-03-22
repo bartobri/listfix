@@ -283,7 +283,8 @@ email_filtered.extend(strip_headers(email, exclude_headers))
 ## Create recipient list
 
 recipients = email_lists[list_email]
-recipients.remove(sender)
+if sender in recipients:
+    recipients.remove(sender)
 
 ## Send emails
 
