@@ -324,7 +324,6 @@ def command_dump():
 
     list_email = None
     list_id = None
-    list_recipients = []
 
     ## Check args
 
@@ -347,16 +346,11 @@ def command_dump():
 
     list_id = row[0]
 
-    ## Get email list recipients
+    ## Print list recipients
 
-    rows = db.execute("SELECT email FROM recipients WHERE list_id = ?", [list_id])
+    rows = db.execute("SELECT name, email FROM recipients WHERE list_id = ?", [list_id])
     for row in rows:
-        list_recipients.append(row[0])
-
-    ## Print recipients
-
-    for r in list_recipients:
-        print(r)
+        print(f"{row[1]} ({row[0]})")
 
     return True
 
