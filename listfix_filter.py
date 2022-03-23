@@ -3,6 +3,7 @@
 import sys
 import os
 import re
+import sqlite3
 
 ########################
 ## Variable Defs
@@ -13,6 +14,7 @@ local_domains = [
     "brianbarto.info"
 ]
 
+"""
 email_lists = {
     "test@cityviewgr.com" : [
         "bartobrian@gmail.com",
@@ -101,35 +103,45 @@ email_lists = {
         "mgordon1450@gmail.com"
     ]
 }
+"""
 
 re_header_cont = re.compile("^\s+\S+")
 re_header_end = re.compile("^\s*$")
 re_email_arg = re.compile("([^<>\"\s]+)@(\S+\.[^<>\"\s]+)")
-re_email_to = re.compile("[<, ](([^<>\"\s\,]+)@([^<>\"\s\,]+\.[^<>\"\s\,]+))")
 re_email_parts = re.compile("(\S+)@(\S+\.\S+)")
 re_sender_name = re.compile("^From:\s+\"?([^<>\"]*)\"?\s*<?(\S*)@\S+\.\S+>?$")
 re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.IGNORECASE)
 
-sender = None
-list_email = None
-list_name = None
-list_domain = None
-sender_name = None
-email = []
-email_filtered = []
-logging = True
+# 1 - Error
+# 2 - Info
+# 3 - Debug
+# 4 - Trace
+debug_level = 3
+command = None
+rval = None
+db = None
 
 ########################
 ## Function Defs
 ########################
 
-def args_ok():
-    if (len(sys.argv) > 2):
-        for arg in sys.argv[1:]:
-            if (not re_email_arg.match(arg) or not re_email_arg.match(arg)):
-              return False
+def check_database_tables(db):
+    row = db.execute("select count(*) from sqlite_master where type = 'table' and name = 'lists'").fetchone()
+    if (not row[0]):
+        db.execute("create table lists(id INTEGER primary key autoincrement, name text, email text)")
+    row = db.execute("select count(*) from sqlite_master where type = 'table' and name = 'recipients'").fetchone()
+    if (not row[0]):
+        db.execute("create table recipients(id INTEGER primary key autoincrement, list_id int, name text, email text)")
+
+def args_ok(command):
+    if (command == "filter"):
+        if (len(sys.argv) >= 4):
+            if (not re_email_arg.match(sys.argv[2]) or not re_email_arg.match(sys.argv[3])):
+              raise False
             else:
               return True
+        else:
+            raise False
     else:
         return False
 
@@ -194,102 +206,156 @@ def send_email(to_email, email_contents):
         p.write(line)
     p.close()
 
-def log_info(sender, recipient, lines):
+def debug_line(level, line):
 
-    f = open("/tmp/listfix_log.txt", "a")
-    f.write(f"Postfix Sender: {sender}\n")
-    f.write(f"Postfix Recipient: {recipient}\n")
+    levels = {
+        1 : "Error",
+        2 : "Info",
+        3 : "Debug",
+        4 : "Trace"
+    }
 
-    for line in lines:
-        if (re_header_end.match(line)):
-                break
-
-        f.write(line)
-
-    f.write("\n")
-    f.close()
-
-def log_line(line):
+    if (level not in levels.keys()):
+        return
 
     line = line.rstrip()
 
-    f = open("/tmp/listfix_log.txt", "a")
-    f.write(f"[Log Line] {line}\n")
-    f.close()
+    if (level <= debug_level):
+        f = open("/tmp/listfix_log.txt", "a")
+        f.write(f"[{levels[level]}] {line}\n")
+        f.close()
 
+def command_filter():
+
+    sender = None
+    recipient = None
+    content = []
+    content_filtered = []
+    sender_name = None
+    list_id = None
+    list_name = None
+    list_recipients = []
+    
+    ## Process Args
+
+    if (len(sys.argv) >= 4):
+        if (not re_email_arg.match(sys.argv[2]) or not re_email_arg.match(sys.argv[3])):
+            debug_line(1, f"Invalid arguments for filter command: {sys.argv[2]}, {sys.argv[3]}")
+            return False
+    else:
+        debug_line(1, f"Invalid arguments for filter command: {sys.argv[2]}, {sys.argv[3]}")
+        return False
+
+    sender = sys.argv[2]
+    recipient = sys.argv[3]
+
+    for line in sys.stdin:
+        content.append(line)
+    if (len(content) == 0):
+        debug_line(1, "STDIN does not contain email data.")
+        return False
+
+    ## Debug Data
+
+    debug_line(2, f"Original Sender - {sender}")
+    debug_line(2, f"Original Recipient - {recipient}")
+    for line in content:
+        if (re_header_end.match(line)):
+            break
+        debug_line(4, "Header - " + line)
+
+    ## Skip if this is an auto-reply
+
+    auto_sub_line = get_header(content, "Auto-Submitted")
+    if (auto_sub_line and re_auto_reply.match(auto_sub_line)):
+        return True
+
+    ## Get Sender Name
+
+    from_line = get_header(content, "From")
+    if (from_line):
+        if (re_sender_name.match(from_line)):
+            results = re_sender_name.search(from_line)
+            sender_name = results.group(1) if results.group(1) else results.group(2)
+            sender_name = sender_name.rstrip()
+        else:
+            results = re_email_parts.search(sender)
+            sender_name = results.group(1)
+    else:
+        results = re_email_parts.search(sender)
+        sender_name = results.group(1)
+
+    ## Get email list info
+
+    row = db.execute("SELECT id, name FROM lists WHERE email = ?", [recipient]).fetchone()
+    if (not row):
+        debug_line(1, f"Recipient email list {recipient} not defined in database.")
+        return False
+
+    list_id = row[0]
+    list_name = row[1]
+
+    ## Get recipient list
+
+    rows = db.execute("SELECT email FROM recipients WHERE list_id = ?", [list_id])
+    for row in rows:
+        list_recipients.append(row[0])
+
+    ## Costruct Filtered Email
+
+    content_filtered.append(f"From: \"{sender_name} via {list_name}\" <{recipient}>\n")
+    if (sender not in list_recipients):
+        content_filtered.append(f"Reply-To: {recipient}, {sender}\n")
+    else:
+        content_filtered.append(f"Reply-To: {recipient}\n")
+    exclude_headers = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"]
+    content_filtered.extend(strip_headers(content, exclude_headers))
+
+    ## Remove sender from list
+
+    if sender in list_recipients:
+        list_recipients.remove(sender)
+
+    ## Send emails
+
+    for r in list_recipients:
+        send_email(r, content_filtered)
+        debug_line(3, f"List Recipient: {r}")
+
+    return True
 
 ########################
 ## Main Program
 ########################
 
-## Get/check args
+## Connect to DB (create DB if needed) and check tables.
 
-if (args_ok()):
-    sender = sys.argv[1]
-    list_email = sys.argv[2]
-    if (not sender or not list_email):
-        raise ValueError('Missing or Invalid Arguments')
+listfix_dir = os.path.dirname(os.path.realpath(__file__))
+db = sqlite3.connect(listfix_dir + "/listfix.db")
+
+check_database_tables(db)
+
+## Get command
+
+if (len(sys.argv) >= 1):
+    command = sys.argv[1]
 else:
-    raise ValueError('Missing or Invalid Arguments')
+    raise ValueError("Missing Command Argument")
 
-## Get email content
+## Check Arguments
 
-for line in sys.stdin:
-    email.append(line)
-if (len(email) == 0):
-    raise ValueError('Missing Piped Data')
+if (not args_ok(command)):
+    raise ValueError(f"Missing or Invalid Arguments for Command: {command}")
 
-## Logging
+## Evaluate command
 
-if (logging):
-    for arg in sys.argv[1:]:
-        log_line(arg)
-    log_info(sender, list_email, email)
-
-## Check if this is an auto-reply
-
-auto_sub_line = get_header(email, "Auto-Submitted")
-if (auto_sub_line and re_auto_reply.match(auto_sub_line)):
-    exit()
-
-## Verify list_email is a known list
-
-if (list_email not in email_lists.keys()):
-    raise ValueError(f"Undefined Email List: {list_email}")
-
-list_name = re_email_parts.search(list_email).group(1)
-list_domain = re_email_parts.search(list_email).group(2)
-
-## Get Sender Name
-
-from_line = get_header(email, "From")
-if (from_line):
-    if (re_sender_name.match(from_line)):
-        results = re_sender_name.search(from_line)
-        sender_name = results.group(1) if results.group(1) else results.group(2)
-        sender_name = sender_name.rstrip()
-    else:
-        raise ValueError('Can Not Determine Sender Name')
+if (command == "filter"):
+    rval = command_filter()
+    if (not rval):
+        raise ValueError(f"Error while executing command_filter()")
 else:
-    raise ValueError('Can Not Find \'From\' Line in Email')
+    raise ValueError(f"Unknown Command: {command}")
 
-## Costruct Filtered Email
+## Disconnect from DB
 
-email_filtered.append(f"From: \"{sender_name} via {list_name}\" <{list_email}>\n")
-if (sender not in email_lists[list_email]):
-    email_filtered.append(f"Reply-To: {list_email}, {sender}\n")
-else:
-    email_filtered.append(f"Reply-To: {list_email}\n")
-exclude_headers = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"]
-email_filtered.extend(strip_headers(email, exclude_headers))
-
-## Create recipient list
-
-recipients = email_lists[list_email]
-if sender in recipients:
-    recipients.remove(sender)
-
-## Send emails
-
-for recipient in recipients:
-    send_email(recipient, email_filtered)
+db.close()
