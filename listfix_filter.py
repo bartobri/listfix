@@ -333,7 +333,7 @@ def command_dump():
             print(f"Invalid argument for dump command: {sys.argv[2]}")
             return False
     else:
-        print(f"Missing arguments for dump command.")
+        print(f"Missing argument for dump command.")
         return False
 
     list_email = sys.argv[2]
@@ -359,6 +359,42 @@ def command_dump():
         print(r)
 
     return True
+
+def command_create():
+
+    list_email = None
+    list_id = None
+    list_name = None
+
+    ## Check args
+
+    if (len(sys.argv) >= 4):
+        if (not re_email_arg.match(sys.argv[2])):
+            print(f"Invalid argument for create command: {sys.argv[2]}")
+            return False
+    else:
+        print(f"Missing argument for create command.")
+        return False
+
+    list_email = sys.argv[2]
+    list_name = sys.argv[3]
+
+    ## Check if exists in db
+
+    row = db.execute("SELECT id FROM lists WHERE email = ?", [list_email]).fetchone()
+    if (row):
+        print(f"Email list {list_email} already defined in database.")
+        return False
+
+    ## Insert into database
+
+    db.execute("INSERT INTO lists (name, email) VALUES (?,?)", [list_name, list_email])
+    db.commit()
+
+    print(f"New list ({list_email}) added.")
+
+    return True
+
 
 ########################
 ## Main Program
@@ -392,6 +428,10 @@ elif (command == "dump"):
     rval = command_dump()
     if (not rval):
         raise ValueError(f"Error while executing command_dump()")
+elif (command == "create"):
+    rval = command_create()
+    if (not rval):
+        raise ValueError(f"Error while executing command_create()")
 else:
     raise ValueError(f"Unknown Command: {command}")
 
