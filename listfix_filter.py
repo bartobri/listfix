@@ -312,6 +312,14 @@ def command_filter():
 
     return True
 
+def command_lists():
+
+    rows = db.execute("SELECT name, email FROM lists")
+    for row in rows:
+        print(f"{row[1]} ({row[0]})")
+
+    return True
+
 ########################
 ## Main Program
 ########################
@@ -336,6 +344,10 @@ if (command == "filter"):
     rval = command_filter()
     if (not rval):
         raise ValueError(f"Error while executing command_filter()")
+elif (command == "lists"):
+    rval = command_lists()
+    if (not rval):
+        raise ValueError(f"Error while executing command_lists()")
 else:
     raise ValueError(f"Unknown Command: {command}")
 
