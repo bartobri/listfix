@@ -231,7 +231,7 @@ def command_filter():
             debug_line(1, f"Invalid arguments for filter command: {sys.argv[2]}, {sys.argv[3]}")
             return False
     else:
-        debug_line(1, f"Invalid arguments for filter command: {sys.argv[2]}, {sys.argv[3]}")
+        debug_line(1, f"Missing arguments for filter command.")
         return False
 
     sender = sys.argv[2]
@@ -320,6 +320,46 @@ def command_lists():
 
     return True
 
+def command_dump():
+
+    list_email = None
+    list_id = None
+    list_recipients = []
+
+    ## Check args
+
+    if (len(sys.argv) >= 3):
+        if (not re_email_arg.match(sys.argv[2])):
+            print(f"Invalid argument for dump command: {sys.argv[2]}")
+            return False
+    else:
+        print(f"Missing arguments for dump command.")
+        return False
+
+    list_email = sys.argv[2]
+
+    ## Get email list id
+
+    row = db.execute("SELECT id FROM lists WHERE email = ?", [list_email]).fetchone()
+    if (not row):
+        print(f"Email list {list_email} not defined in database.")
+        return False
+
+    list_id = row[0]
+
+    ## Get email list recipients
+
+    rows = db.execute("SELECT email FROM recipients WHERE list_id = ?", [list_id])
+    for row in rows:
+        list_recipients.append(row[0])
+
+    ## Print recipients
+
+    for r in list_recipients:
+        print(r)
+
+    return True
+
 ########################
 ## Main Program
 ########################
@@ -348,6 +388,10 @@ elif (command == "lists"):
     rval = command_lists()
     if (not rval):
         raise ValueError(f"Error while executing command_lists()")
+elif (command == "dump"):
+    rval = command_dump()
+    if (not rval):
+        raise ValueError(f"Error while executing command_dump()")
 else:
     raise ValueError(f"Unknown Command: {command}")
 
