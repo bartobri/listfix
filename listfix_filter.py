@@ -133,18 +133,6 @@ def check_database_tables(db):
     if (not row[0]):
         db.execute("create table recipients(id INTEGER primary key autoincrement, list_id int, name text, email text)")
 
-def args_ok(command):
-    if (command == "filter"):
-        if (len(sys.argv) >= 4):
-            if (not re_email_arg.match(sys.argv[2]) or not re_email_arg.match(sys.argv[3])):
-              raise False
-            else:
-              return True
-        else:
-            raise False
-    else:
-        return False
-
 def get_header(lines, header):
     rval = None
 
@@ -341,11 +329,6 @@ if (len(sys.argv) >= 1):
     command = sys.argv[1]
 else:
     raise ValueError("Missing Command Argument")
-
-## Check Arguments
-
-if (not args_ok(command)):
-    raise ValueError(f"Missing or Invalid Arguments for Command: {command}")
 
 ## Evaluate command
 
