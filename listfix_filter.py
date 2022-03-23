@@ -357,7 +357,6 @@ def command_dump():
 def command_create():
 
     list_email = None
-    list_id = None
     list_name = None
 
     ## Check args
@@ -386,6 +385,42 @@ def command_create():
     db.commit()
 
     print(f"New list ({list_email}) added.")
+
+    return True
+
+def command_destroy():
+
+    list_email = None
+    list_id = None
+
+    ## Check args
+
+    if (len(sys.argv) >= 3):
+        if (not re_email_arg.match(sys.argv[2])):
+            print(f"Invalid argument for destroy command: {sys.argv[2]}")
+            return False
+    else:
+        print(f"Missing argument for destroy command.")
+        return False
+
+    list_email = sys.argv[2]
+
+    ## Get id from database
+
+    row = db.execute("SELECT id FROM lists WHERE email = ?", [list_email]).fetchone()
+    if (not row):
+        print(f"Email list {list_email} not defined in database.")
+        return False
+
+    list_id = row[0]
+
+    ## Delete from database
+
+    db.execute("DELETE FROM lists WHERE id = ?", [list_id])
+    db.execute("DELETE FROM recipients WHERE list_id = ?", [list_id])
+    db.commit()
+
+    print(f"Email list ({list_email}) deleted.")
 
     return True
 
@@ -446,10 +481,10 @@ def command_remove():
 
     if (len(sys.argv) >= 4):
         if (not re_email_arg.match(sys.argv[2]) or not re_email_arg.match(sys.argv[3])):
-            print(f"Invalid arguments for add command: {sys.argv[2]}, {sys.argv[3]}")
+            print(f"Invalid arguments for remove command: {sys.argv[2]}, {sys.argv[3]}")
             return False
     else:
-        print(f"Missing arguments for add command.")
+        print(f"Missing arguments for remove command.")
         return False
 
     list_email = sys.argv[2]
@@ -519,6 +554,10 @@ elif (command == "create"):
     rval = command_create()
     if (not rval):
         raise ValueError(f"Error while executing command_create()")
+elif (command == "destroy"):
+    rval = command_destroy()
+    if (not rval):
+        raise ValueError(f"Error while executing command_destroy()")
 elif (command == "add"):
     rval = command_add()
     if (not rval):
