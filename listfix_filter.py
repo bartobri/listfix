@@ -395,6 +395,52 @@ def command_create():
 
     return True
 
+def command_add():
+
+    list_email = None
+    list_id = None
+    recipient_email = None
+    recipient_name = None
+
+    ## Check Args
+
+    if (len(sys.argv) >= 5):
+        if (not re_email_arg.match(sys.argv[2]) or not re_email_arg.match(sys.argv[3])):
+            print(f"Invalid arguments for add command: {sys.argv[2]}, {sys.argv[3]}, {sys.argv[4]}")
+            return False
+    else:
+        print(f"Missing arguments for add command.")
+        return False
+
+    list_email = sys.argv[2]
+    recipient_email = sys.argv[3]
+    recipient_name = sys.argv[4]
+
+    ## Get list id in db
+
+    row = db.execute("SELECT id FROM lists WHERE email = ?", [list_email]).fetchone()
+    if (not row):
+        print(f"Email list {list_email} not defined in database.")
+        return False
+
+    list_id = row[0]
+
+    ## Check if recipient already exists in list
+
+    row = db.execute("SELECT count(*) FROM recipients WHERE list_id = ? AND email = ?", [list_id, recipient_email]).fetchone()
+    if (row and row[0] > 0):
+        print("Recipient ({recipient_email}) already exists in list ({list_email})")
+        return False
+
+    ## Insert into database
+
+    db.execute("INSERT INTO recipients (list_id, name, email) VALUES (?,?, ?)", [list_id, recipient_name, recipient_email])
+    db.commit()
+
+    print(f"New recipient ({recipient_email}) added to list ({list_email})")
+
+    return True
+
 
 ########################
 ## Main Program
@@ -432,6 +478,10 @@ elif (command == "create"):
     rval = command_create()
     if (not rval):
         raise ValueError(f"Error while executing command_create()")
+elif (command == "add"):
+    rval = command_add()
+    if (not rval):
+        raise ValueError(f"Error while executing command_add()")
 else:
     raise ValueError(f"Unknown Command: {command}")
 
