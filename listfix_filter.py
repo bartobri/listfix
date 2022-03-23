@@ -429,7 +429,7 @@ def command_add():
 
     row = db.execute("SELECT count(*) FROM recipients WHERE list_id = ? AND email = ?", [list_id, recipient_email]).fetchone()
     if (row and row[0] > 0):
-        print("Recipient ({recipient_email}) already exists in list ({list_email})")
+        print(f"Recipient ({recipient_email}) already exists in list ({list_email})")
         return False
 
     ## Insert into database
@@ -438,6 +438,53 @@ def command_add():
     db.commit()
 
     print(f"New recipient ({recipient_email}) added to list ({list_email})")
+
+    return True
+
+def command_remove():
+
+    list_email = None
+    list_id = None
+    recipient_email = None
+    recipient_id = None
+
+    ## Check Args
+
+    if (len(sys.argv) >= 4):
+        if (not re_email_arg.match(sys.argv[2]) or not re_email_arg.match(sys.argv[3])):
+            print(f"Invalid arguments for add command: {sys.argv[2]}, {sys.argv[3]}")
+            return False
+    else:
+        print(f"Missing arguments for add command.")
+        return False
+
+    list_email = sys.argv[2]
+    recipient_email = sys.argv[3]
+
+    ## Get list id in db
+
+    row = db.execute("SELECT id FROM lists WHERE email = ?", [list_email]).fetchone()
+    if (not row):
+        print(f"Email list {list_email} not defined in database.")
+        return False
+
+    list_id = row[0]
+
+    ## Check if recipient does not exist in list
+
+    row = db.execute("SELECT id FROM recipients WHERE list_id = ? AND email = ?", [list_id, recipient_email]).fetchone()
+    if (not row):
+        print(f"Recipient ({recipient_email}) does not exists in list ({list_email})")
+        return False
+
+    recipient_id = row[0]
+
+    ## Insert into database
+
+    db.execute("DELETE FROM recipients WHERE id = ?", [recipient_id])
+    db.commit()
+
+    print(f"Recipient ({recipient_email}) removed from list ({list_email})")
 
     return True
 
@@ -482,6 +529,10 @@ elif (command == "add"):
     rval = command_add()
     if (not rval):
         raise ValueError(f"Error while executing command_add()")
+elif (command == "remove"):
+    rval = command_remove()
+    if (not rval):
+        raise ValueError(f"Error while executing command_remove()")
 else:
     raise ValueError(f"Unknown Command: {command}")
 
