@@ -9,11 +9,6 @@ import sqlite3
 ## Variable Defs
 ########################
 
-local_domains = [
-    "cityviewgr.com",
-    "brianbarto.info"
-]
-
 re_header_cont = re.compile("^\s+\S+")
 re_header_end = re.compile("^\s*$")
 re_email_arg = re.compile("([^<>\"\s]+)@(\S+\.[^<>\"\s]+)")
