@@ -189,6 +189,8 @@ def command_filter():
     rows = db.execute("SELECT email FROM recipients WHERE list_id = ?", [list_id])
     for row in rows:
         list_recipients.append(row[0])
+    if (len(list_recipients) == 0):
+        debug_line(1, f"No recipients defined for email list: {recipient}.")
 
     ## Costruct Filtered Email
 
