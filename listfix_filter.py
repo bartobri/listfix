@@ -13,7 +13,7 @@ re_header_cont = re.compile("^\s+\S+")
 re_header_end = re.compile("^\s*$")
 re_email_arg = re.compile("([^<>\"\s]+)@(\S+\.[^<>\"\s]+)")
 re_email_parts = re.compile("(\S+)@(\S+\.\S+)")
-re_sender_name = re.compile("^From:\s+\"?([^<>\"]*)\"?\s*<?(\S*)@\S+\.\S+>?$")
+re_sender_info = re.compile("^From:\s+\"?([^<>\"]*?)\"?\s*<?(([^<>\"\s]+)@\S+\.[^<>\"\s]+)>?$")
 re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.IGNORECASE)
 
 # 1 - Error
@@ -119,27 +119,30 @@ def debug_line(level, line):
 
 def command_filter():
 
-    sender = None
     recipient = None
+    sender = None
+    sender_name = None
     content = []
     content_filtered = []
-    sender_name = None
     list_id = None
     list_name = None
     list_recipients = []
     
     ## Process Args
 
-    if (len(sys.argv) >= 4):
-        if (not re_email_arg.match(sys.argv[2]) or not re_email_arg.match(sys.argv[3])):
-            debug_line(1, f"Invalid arguments for filter command: {sys.argv[2]}, {sys.argv[3]}")
+    if (len(sys.argv) >= 3):
+        if (not re_email_arg.match(sys.argv[2])):
+            debug_line(1, f"Invalid argument for filter command: {sys.argv[2]}")
             return False
     else:
-        debug_line(1, f"Missing arguments for filter command.")
+        debug_line(1, f"Missing argument for filter command.")
         return False
 
-    sender = sys.argv[2]
-    recipient = sys.argv[3]
+    recipient = sys.argv[2]
+
+    debug_line(2, f"Original Recipient - {recipient}")
+
+    ## Get email contents
 
     for line in sys.stdin:
         content.append(line)
@@ -147,35 +150,29 @@ def command_filter():
         debug_line(1, "STDIN does not contain email data.")
         return False
 
-    ## Debug Data
+    ## Get sender info
+
+    from_line = get_header(content, "From")
+    if (from_line):
+        if (re_sender_info.match(from_line)):
+            results = re_sender_info.search(from_line)
+            sender_name = results.group(1) if results.group(1) else results.group(3)
+            sender = results.group(2)
+        else:
+            debug_line(1, "From line does not match regular expression.")
+            debug_line(3, from_line)
+            return False
+    else:
+        debug_line(1, "Could not find From line in email contents.")
+        return False
 
     debug_line(2, f"Original Sender - {sender}")
-    debug_line(2, f"Original Recipient - {recipient}")
-    for line in content:
-        if (re_header_end.match(line)):
-            break
-        debug_line(4, "Header - " + line)
 
     ## Skip if this is an auto-reply
 
     auto_sub_line = get_header(content, "Auto-Submitted")
     if (auto_sub_line and re_auto_reply.match(auto_sub_line)):
         return True
-
-    ## Get Sender Name
-
-    from_line = get_header(content, "From")
-    if (from_line):
-        if (re_sender_name.match(from_line)):
-            results = re_sender_name.search(from_line)
-            sender_name = results.group(1) if results.group(1) else results.group(2)
-            sender_name = sender_name.rstrip()
-        else:
-            results = re_email_parts.search(sender)
-            sender_name = results.group(1)
-    else:
-        results = re_email_parts.search(sender)
-        sender_name = results.group(1)
 
     ## Get email list info
 
