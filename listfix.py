@@ -428,7 +428,7 @@ def command_remove():
 ## Connect to DB (create DB if needed) and check tables.
 
 listfix_dir = os.path.dirname(os.path.realpath(__file__))
-db = sqlite3.connect(listfix_dir + "/listfix.db")
+db = sqlite3.connect(listfix_dir + "/listfix.sqlite3")
 
 check_database_tables(db)
 
