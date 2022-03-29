@@ -3,8 +3,7 @@
 import sys
 import re
 import os
-from listfix.db import DB
-from listfix.email import Email
+from listfix import DB, Email
 
 ########################
 ## Function Defs
