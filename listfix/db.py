@@ -1,6 +1,6 @@
 import sqlite3
 
-class ListfixDB:
+class DB:
 
     def __init__(self, path):
         try:

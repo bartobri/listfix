@@ -7,7 +7,7 @@ re_email_parts = re.compile("(\S+)@(\S+\.\S+)")
 re_sender_info = re.compile("^From:\s+\"?([^<>\"]*?)\"?\s*<?(([^<>\"\s]+)@\S+\.[^<>\"\s]+)>?$")
 re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.IGNORECASE)
 
-class ListfixEmail:
+class Email:
 
     def __init__(self):
         self.content = []

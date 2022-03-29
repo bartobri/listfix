@@ -3,11 +3,8 @@
 import sys
 import re
 import os
-
-sys.path.insert(1, sys.path[0] + "/mods")
-
-from listfixdb import ListfixDB
-from listfixemail import ListfixEmail
+from listfix.db import DB
+from listfix.email import Email
 
 ########################
 ## Function Defs
@@ -41,7 +38,7 @@ re_email_arg = re.compile("([^<>\"\s]+)@(\S+\.[^<>\"\s]+)")
 ## Connect to DB (create DB if needed) and check tables.
 
 listfix_dir = os.path.dirname(os.path.realpath(__file__))
-db = ListfixDB(listfix_dir + "/listfix.sqlite3")
+db = DB(listfix_dir + "/listfix.sqlite3")
 
 ## Get command
 
@@ -67,7 +64,7 @@ if (command == "filter"):
     for line in sys.stdin:
         content.append(line)
 
-    email_in = ListfixEmail()
+    email_in = Email()
     email_in.set_content(content)
 
     if (email_in.is_auto_reply()):
@@ -79,7 +76,7 @@ if (command == "filter"):
     list_name = db.get_list_name(list_email)
     list_recipients = db.get_list_recipients(list_email)
 
-    email_out = ListfixEmail()
+    email_out = Email()
     email_out.set_content(email_in.get_content())
     email_out.strip_headers(exclude = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"])
     if (sender_email not in list_recipients):
