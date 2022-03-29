@@ -55,6 +55,10 @@ class ListfixDB:
         lists = []
 
         rows = self.db.execute("SELECT email FROM lists")
+
+        if (rows.rowcount == 0):
+            return False
+
         for row in rows:
             lists.append(row[0])
 
