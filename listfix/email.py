@@ -9,11 +9,9 @@ re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.
 
 class Email:
 
-    def __init__(self):
+    def __init__(self, content):
         self.content = []
-        return
 
-    def set_content(self, content):
         if (type(content) is list):
             if (len(content) > 0):
                 self.content = content[:]
@@ -22,20 +20,12 @@ class Email:
         else:
             return False
 
-        return True
-
     def get_content(self):
-        if (len(self.content) == 0):
-            return False
-
         return self.content[:]
 
 
     def get_header(self, header):
         rval = None
-
-        if (len(self.content) == 0):
-            return False
 
         header = header.rstrip()
         if (header[-1] == ":"):
@@ -65,9 +55,6 @@ class Email:
     def get_sender_email(self):
         sender_email = None
 
-        if (len(self.content) == 0):
-            return False
-
         from_line = self.get_header("From")
         if (from_line):
             if (re_sender_info.match(from_line)):
@@ -83,9 +70,6 @@ class Email:
     def get_sender_name(self):
         sender_name = None
 
-        if (len(self.content) == 0):
-            return False
-
         from_line = self.get_header("From")
         if (from_line):
             if (re_sender_info.match(from_line)):
@@ -99,19 +83,12 @@ class Email:
         return sender_name
 
     def is_auto_reply(self):
-        if (len(self.content) == 0):
-            return False
-
         auto_sub_line = self.get_header("Auto-Submitted")
         if (auto_sub_line and re_auto_reply.match(auto_sub_line)):
             return True
-
         return False
 
     def strip_headers(self, exclude):
-        if (len(self.content) == 0):
-            return False
-
         stripped_content = []
 
         append_next = False
@@ -141,32 +118,18 @@ class Email:
         return True
 
     def add_header(self, header):
-        if (len(self.content) == 0):
-            return False
-
         header = header.rstrip() + "\n"
-
         self.content.append(header)
-
-        return
+        return True
 
     def add_header_prepend(self, header):
-        if (len(self.content) == 0):
-            return False
-
         header = header.rstrip() + "\n"
-
         self.content.insert(0, header)
-
-        return
+        return True
 
     def send(self, recipient):
-        if (len(self.content) == 0):
-            return False
-
         p = os.popen(f"/usr/sbin/sendmail -G -i {recipient}", "w")
         for line in self.content:
             p.write(line)
         p.close()
-
         return True

@@ -63,8 +63,7 @@ if (command == "filter"):
     for line in sys.stdin:
         content.append(line)
 
-    email_in = Email()
-    email_in.set_content(content)
+    email_in = Email(content)
 
     if (email_in.is_auto_reply()):
         exit()
@@ -75,8 +74,7 @@ if (command == "filter"):
     list_name = db.get_list_name(list_email)
     list_recipients = db.get_list_recipients(list_email)
 
-    email_out = Email()
-    email_out.set_content(email_in.get_content())
+    email_out = Email(email_in.get_content())
     email_out.strip_headers(exclude = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"])
     if (sender_email not in list_recipients):
         email_out.add_header_prepend(f"Reply-To: {list_email}, {sender}")
