@@ -2,7 +2,7 @@
 
 import sys
 import os
-from listfix import Args, DB, Email, error_handler
+from listfix import Args, DB, Email, Errors
 
 ########################
 ## Function Defs
@@ -31,7 +31,8 @@ def debug_line(level, line):
 ## Main Program
 ########################
 
-sys.excepthook = error_handler
+er = Errors(debug=True)
+er.set_exception_handler()
 
 ## Connect to DB (create DB if needed) and check tables.
 
