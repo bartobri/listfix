@@ -4,32 +4,7 @@ import sys
 import os
 from listfix import Args, DB, Email, Errors
 
-########################
-## Function Defs
-########################
-
-def debug_line(level, line):
-
-    levels = {
-        1 : "Error",
-        2 : "Info",
-        3 : "Debug",
-        4 : "Trace"
-    }
-
-    if (level not in levels.keys()):
-        return
-
-    line = line.rstrip()
-
-    if (level <= debug_level):
-        f = open("/tmp/listfix_log.txt", "a")
-        f.write(f"[{levels[level]}] {line}\n")
-        f.close()
-
-########################
-## Main Program
-########################
+## Set up the exception handler
 
 er = Errors(debug=True)
 er.set_exception_handler()
