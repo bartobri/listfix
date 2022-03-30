@@ -80,9 +80,12 @@ elif (command == "lists"):
 elif (command == "dump"):
     list_email = args.get_list_email()
     recipients = db.get_list_recipients(list_email)
-    for r in recipients:
-        recipient_name = db.get_recipient_name(list_email, r)
-        print(f"{r} ({recipient_name})")
+    if (len(recipients) == 0):
+        print(f"No recipients defined for list {list_email}")
+    else:
+        for r in recipients:
+            recipient_name = db.get_recipient_name(list_email, r)
+            print(f"{r} ({recipient_name})")
 
 elif (command == "create"):
     list_email = args.get_list_email()
