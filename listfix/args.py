@@ -13,40 +13,40 @@ class Args:
                 self.args = args
                 self.command = args[1]
             else:
-                return False
+                raise IndexError("Missing command argument.")
         else:
-            return False
+            raise TypeError("Arguments should be of list type.")
 
     def get_command(self):
         return self.command
 
     def get_list_email(self):
         if (len(self.args) < 3):
-            return False
+            raise IndexError(f"Missing argument(s) for '{self.command}' command.")
 
         if (not re_email_arg.match(self.args[2])):
-            return False
+            raise ValueError(f"Invalid argument value: {self.args[2]}")
 
         return self.args[2]
 
     def get_list_name(self):
         if (len(self.args) < 4):
-            return False
+            raise IndexError(f"Missing argument(s) for '{self.command}' command.")
 
         return self.args[3]
 
     def get_recipient_email(self):
         if (len(self.args) < 4):
-            return False
+            raise IndexError(f"Missing argument(s) for '{self.command}' command.")
 
         if (not re_email_arg.match(self.args[3])):
-            return False
+            raise ValueError(f"Invalid argument value: {self.args[3]}")
 
         return self.args[3]
 
     def get_recipient_name(self):
         if (len(self.args) < 5):
-            return False
+            raise IndexError(f"Missing argument(s) for '{self.command}' command.")
 
         return self.args[4]
 
