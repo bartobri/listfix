@@ -19,33 +19,34 @@ class Email:
     def get_content(self):
         return self.content[:]
 
-    def get_header(self, header):
-        header = header.lstrip().rstrip()
-        if (header[-1] == ":"):
-            header = header[0:-1]
-        re_header = re.compile("^" + header + ": ", re.IGNORECASE)
-
-        rval = None
-        append_next = False
-        in_header = True
+    def get_headers(self):
+        headers = []
         for line in self.content:
-            if (in_header):
-                if (re_header_cont.match(line) and append_next):
-                    rval = rval + " " + line.rstrip().lstrip()
-                    continue
+            if (re_header_end.match(line)):
+                break
+            headers.append(line)
+        return headers
 
-                append_next = False
-                if (re_header.match(line)):
-                    rval = line.rstrip()
-                    append_next = True
-                elif (re_header_end.match(line)):
-                    in_header = False
-            else:
+    def get_header(self, prefix):
+        header = None
+        prefix = prefix.lstrip().rstrip()
+        if (prefix[-1] == ":"):
+            prefix = prefix[0:-1]
+        re_header = re.compile("^" + prefix + ": ", re.IGNORECASE)
+
+        headers = self.get_headers();
+        for i, line in enumerate(headers):
+            if (re_header.match(line)):
+                header = line.rstrip()
+                i += 1
+                while (i < len(headers) and re_header_cont.match(headers[i])):
+                    header = header + " " + headers[i].lstrip().rstrip()
+                    i += 1
                 break
 
-        if (not rval):
-            raise ValueError(f"Could not find header for '{header}'")
-        return rval
+        if (not header):
+            raise ValueError(f"Could not find header for '{prefix}'")
+        return header
 
     def get_sender_email(self):
         from_line = self.get_header("From")
