@@ -70,9 +70,12 @@ if (command == "filter"):
 
 elif (command == "lists"):
     lists = db.get_lists()
-    for l in lists:
-        list_name = db.get_list_name(l)
-        print(f"{l} ({list_name})")
+    if (len(lists) == 0):
+        print("No lists defined.")
+    else:
+        for l in lists:
+            list_name = db.get_list_name(l)
+            print(f"{l} ({list_name})")
 
 elif (command == "dump"):
     list_email = args.get_list_email()
