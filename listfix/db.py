@@ -17,11 +17,11 @@ class DB:
             self.db.commit()
 
     def check_list_exists(self, list_email):
-        lists = self.get_lists()
-        if (list_email in lists):
-            return True
-        else:
+        try:
+            self.get_list_id(list_email)
+        except ValueError:
             return False
+        return True
 
     def get_lists(self):
         lists = []
@@ -63,15 +63,13 @@ class DB:
         self.db.commit()
 
     def check_recipient_exists(self, list_email, recipient_email):
-        recipients = self.get_list_recipients(list_email)
-        if (recipient_email in recipients):
-            return True
-        else:
+        try:
+            self.get_recipient_id(list_email, recipient_email)
+        except ValueError:
             return False
+        return True
 
     def get_recipient_id(self, list_email, recipient_email):
-        if (not self.check_list_exists(list_email)):
-            raise ValueError(f"Email list does not exist: {list_email}")
         list_id = self.get_list_id(list_email)
         row = self.db.execute("SELECT id FROM recipients WHERE list_id = ? and email = ?", [list_id, recipient_email]).fetchone()
         if (not row):
@@ -79,8 +77,6 @@ class DB:
         return row[0]
 
     def get_recipient_name(self, list_email, recipient_email):
-        if (not self.check_list_exists(list_email)):
-            raise ValueError(f"Email list does not exist: {list_email}")
         list_id = self.get_list_id(list_email)
         row = self.db.execute("SELECT name FROM recipients WHERE list_id = ? and email = ?", [list_id, recipient_email]).fetchone()
         if (not row):
@@ -88,8 +84,6 @@ class DB:
         return row[0]
 
     def create_recipient(self, list_email, recipient_email, recipient_name):
-        if (not self.check_list_exists(list_email)):
-            raise ValueError(f"Email list does not exist: {list_email}")
         if (self.check_recipient_exists(list_email, recipient_email)):
             raise ValueError(f"Recipient already exists: {recipient_email}")
         list_id = self.get_list_id(list_email)
@@ -97,10 +91,6 @@ class DB:
         self.db.commit()
 
     def destroy_recipient(self, list_email, recipient_email):
-        if (not self.check_list_exists(list_email)):
-            raise ValueError(f"Email list does not exist: {list_email}")
-        if (not self.check_recipient_exists(list_email, recipient_email)):
-            raise ValueError(f"Recipient does not exist: {recipient_email}")
         list_id = self.get_list_id(list_email)
         recipient_id = self.get_recipient_id(list_email, recipient_email)
         self.db.execute("DELETE FROM recipients WHERE id = ?", [recipient_id])
