@@ -49,7 +49,7 @@ if (command == "filter"):
     list_recipients = db.get_list_recipients(list_email)
 
     email_in = Email(list(sys.stdin))
-    if (email_in.is_auto_reply()):
+    if (email_in.check_auto_reply()):
         exit()
     sender_email = email_in.get_sender_email()
     sender_name = email_in.get_sender_name()

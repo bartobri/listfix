@@ -10,29 +10,22 @@ re_auto_reply = re.compile("^Auto-Submitted: (auto-generated|auto-replied)", re.
 class Email:
 
     def __init__(self, content):
-        self.content = []
-
-        if (type(content) is list):
-            if (len(content) > 0):
-                self.content = content[:]
-            else:
-                return False
-        else:
-            return False
+        if (type(content) is not list):
+            raise TypeError("Email content should be of list type.")
+        if (len(content) == 0):
+            raise IndexError("Email content cannot be empty list.")
+        self.content = content[:]
 
     def get_content(self):
         return self.content[:]
 
-
     def get_header(self, header):
-        rval = None
-
-        header = header.rstrip()
+        header = header.lstrip().rstrip()
         if (header[-1] == ":"):
             header = header[0:-1]
-
         re_header = re.compile("^" + header + ": ", re.IGNORECASE)
 
+        rval = None
         append_next = False
         in_header = True
         for line in self.content:
@@ -50,47 +43,37 @@ class Email:
             else:
                 break
 
+        if (not rval):
+            raise ValueError(f"Could not find header for '{header}'")
         return rval
 
     def get_sender_email(self):
-        sender_email = None
-
         from_line = self.get_header("From")
-        if (from_line):
-            if (re_sender_info.match(from_line)):
-                results = re_sender_info.search(from_line)
-                sender_email = results.group(2)
-            else:
-                return False
-        else:
-            return False
-
+        if (not re_sender_info.match(from_line)):
+            raise ValueError(f"Could not extract sender email for header '{header}'")
+        results = re_sender_info.search(from_line)
+        sender_email = results.group(2)
         return sender_email
 
     def get_sender_name(self):
-        sender_name = None
-
         from_line = self.get_header("From")
-        if (from_line):
-            if (re_sender_info.match(from_line)):
-                results = re_sender_info.search(from_line)
-                sender_name = results.group(1) if results.group(1) else results.group(3)
-            else:
-                return False
-        else:
-            return False
-
+        if (not re_sender_info.match(from_line)):
+            raise ValueError(f"Could not extract sender name for header '{header}'")
+        results = re_sender_info.search(from_line)
+        sender_name = results.group(1) if results.group(1) else results.group(3)
         return sender_name
 
-    def is_auto_reply(self):
-        auto_sub_line = self.get_header("Auto-Submitted")
+    def check_auto_reply(self):
+        auto_sub_line = None
+        try:
+            auto_sub_line = self.get_header("Auto-Submitted")
+        except ValueError:
+            return False
         if (auto_sub_line and re_auto_reply.match(auto_sub_line)):
             return True
-        return False
 
-    def strip_headers(self, exclude):
+    def strip_headers(self, exclude=[]):
         stripped_content = []
-
         append_next = False
         in_header = True
         for line in self.content:
@@ -112,24 +95,18 @@ class Email:
                         break
             else:
                 stripped_content.append(line)
-
         self.content = stripped_content[:]
-
-        return True
 
     def add_header(self, header):
         header = header.rstrip() + "\n"
         self.content.append(header)
-        return True
 
     def add_header_prepend(self, header):
         header = header.rstrip() + "\n"
         self.content.insert(0, header)
-        return True
 
     def send(self, recipient):
         p = os.popen(f"/usr/sbin/sendmail -G -i {recipient}", "w")
         for line in self.content:
             p.write(line)
         p.close()
-        return True
