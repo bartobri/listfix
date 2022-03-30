@@ -45,24 +45,19 @@ command = args.get_command()
 
 if (command == "filter"):
     list_email = args.get_list_email()
-
-    content = list(sys.stdin)[:]
-
-    email_in = Email(content)
-
-    if (email_in.is_auto_reply()):
-        exit()
-
-    sender_email = email_in.get_sender_email()
-    sender_name = email_in.get_sender_name()
-
     list_name = db.get_list_name(list_email)
     list_recipients = db.get_list_recipients(list_email)
+
+    email_in = Email(list(sys.stdin))
+    if (email_in.is_auto_reply()):
+        exit()
+    sender_email = email_in.get_sender_email()
+    sender_name = email_in.get_sender_name()
 
     email_out = Email(email_in.get_content())
     email_out.strip_headers(exclude = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"])
     if (sender_email not in list_recipients):
-        email_out.add_header_prepend(f"Reply-To: {list_email}, {sender}")
+        email_out.add_header_prepend(f"Reply-To: {list_email}, {sender_email}")
     else:
         email_out.add_header_prepend(f"Reply-To: {list_email}")
     email_out.add_header_prepend(f"From: \"{sender_name} via {list_name}\" <{list_email}>")
