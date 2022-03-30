@@ -46,9 +46,7 @@ command = args.get_command()
 if (command == "filter"):
     list_email = args.get_list_email()
 
-    content = []
-    for line in sys.stdin:
-        content.append(line)
+    content = list(sys.stdin)[:]
 
     email_in = Email(content)
 
