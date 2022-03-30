@@ -2,7 +2,7 @@
 
 import sys
 import os
-from listfix import Args, DB, Email
+from listfix import Args, DB, Email, error_handler
 
 ########################
 ## Function Defs
@@ -30,6 +30,8 @@ def debug_line(level, line):
 ########################
 ## Main Program
 ########################
+
+sys.excepthook = error_handler
 
 ## Connect to DB (create DB if needed) and check tables.
 
@@ -112,7 +114,7 @@ elif (command == "remove"):
     print(f"Recipient ({recipient_email}) removed from list ({list_email})")
 
 else:
-    raise ValueError(f"Unknown Command: {command}")
+    raise ValueError(f"Unknown command: {command}")
 
 ## Disconnect from DB
 
