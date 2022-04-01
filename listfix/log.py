@@ -1,19 +1,19 @@
 class Log:
 
 	def __init__(self):
-		self.log_file = open("/tmp/listfix_log.txt", "a")
+		self.log_file = "/tmp/listfix_log.txt"
+
+	def write(self, type, txt):
+		txt = txt.rstrip()
+		f = open(self.log_file, "a")
+		f.write(f"[{type}] {txt}\n")
+		f.close()
 
 	def info(self, txt):
-		txt = txt.rstrip()
-		self.log_file.write(f"[INFO] {txt}\n")
+		self.write("INFO", txt)
 
 	def error(self, txt):
-		txt = txt.rstrip()
-		self.log_file.write(f"[ERROR] {txt}\n")
+		self.write("ERROR", txt)
 
 	def debug(self, txt):
-		txt = txt.rstrip()
-		self.log_file.write(f"[DEBUG] {txt}\n")
-
-	def close(self):
-		self.log_file.close()
+		self.write("DEBUG", txt)
