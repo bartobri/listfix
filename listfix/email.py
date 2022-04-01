@@ -40,7 +40,7 @@ class Email:
                 header = line.rstrip()
                 i += 1
                 while (i < len(headers) and re_header_cont.match(headers[i])):
-                    header = header + " " + headers[i].lstrip().rstrip()
+                    header = header + "\n" + headers[i].rstrip()
                     i += 1
                 break
 
@@ -73,30 +73,22 @@ class Email:
         if (auto_sub_line and re_auto_reply.match(auto_sub_line)):
             return True
 
-    def strip_headers(self, exclude=[]):
-        stripped_content = []
-        append_next = False
-        in_header = True
-        for line in self.content:
-            if (in_header):
-                if (re_header_cont.match(line) and append_next):
-                    stripped_content.append(line)
-                    continue
+    def strip_headers(self, exclude):
+        ex_string = "|".join(exclude)
+        re_exclude = re.compile("^(" + ex_string + "): ", re.IGNORECASE)
 
-                if (re_header_end.match(line)):
-                    stripped_content.append(line)
-                    in_header = False
-                    continue
-
-                append_next = False
-                for ex in exclude:
-                    if (re.match("^" + ex + ": ", line, re.IGNORECASE)):
-                        stripped_content.append(line)
-                        append_next = True
-                        break
+        j = 0
+        header_cont = False
+        for i, header in enumerate(self.get_headers()):
+            if (re_exclude.match(header)):
+                header_cont = True
+                continue
+            elif (header_cont == True and re_header_cont.match(header)):
+                continue
             else:
-                stripped_content.append(line)
-        self.content = stripped_content[:]
+                del self.content[i-j]
+                header_cont = False
+                j += 1
 
     def add_header(self, header):
         header = header.rstrip() + "\n"
