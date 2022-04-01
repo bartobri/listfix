@@ -2,7 +2,11 @@
 
 import sys
 import os
-from listfix import Args, DB, Email, Errors
+from listfix import Args, DB, Email, Errors, Log
+
+## Get log object
+
+log = Log()
 
 ## Set up the exception handler
 
@@ -32,6 +36,9 @@ if (command == "filter"):
     sender_email = email_in.get_sender_email()
     sender_name = email_in.get_sender_name()
 
+    log.info(f"Email from: {sender_email}")
+    log.info(f"Email list: {list_email}")
+
     email_out = Email(email_in.get_content())
     email_out.strip_headers(exclude = ["To", "Cc", "Subject", "Content-[^:]+", "MIME-Version"])
     if (sender_email not in list_recipients):
@@ -44,6 +51,7 @@ if (command == "filter"):
         list_recipients.remove(sender_email)
 
     for r in list_recipients:
+        log.info(f"Recipient: {r}")
         email_out.send(r)
 
 elif (command == "lists"):
