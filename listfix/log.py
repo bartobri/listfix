@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class Log:
 
 	def __init__(self):
@@ -5,8 +7,9 @@ class Log:
 
 	def write(self, type, txt):
 		txt = txt.rstrip()
+		date = datetime.now()
 		f = open(self.log_file, "a")
-		f.write(f"[{type}] {txt}\n")
+		f.write(f"[{type}] {date}, {txt}\n")
 		f.close()
 
 	def info(self, txt):
