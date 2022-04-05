@@ -2,7 +2,7 @@
 
 import sys
 import os
-from listfix import Args, DB, Email, Errors, Log
+from listfix import Args, DB, Email, Errors, Log, Test
 
 ## Get log object
 
@@ -96,6 +96,10 @@ elif (command == "remove"):
     recipient_email = args.get_recipient_email()
     db.destroy_recipient(list_email, recipient_email)
     print(f"Recipient ({recipient_email}) removed from list ({list_email})")
+
+elif (command == "test"):
+    test = Test()
+    test.run_test()
 
 else:
     raise ValueError(f"Unknown command: {command}")
