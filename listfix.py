@@ -4,9 +4,11 @@ import sys
 import os
 from listfix import Args, DB, Email, Errors, Log, Test
 
+listfix_dir = os.path.dirname(os.path.realpath(__file__))
+
 ## Get log object
 
-log = Log()
+log = Log(listfix_dir + "/listfix.log")
 
 ## Set up the exception handler
 
@@ -15,7 +17,6 @@ er.set_exception_handler()
 
 ## Connect to DB (create DB if needed) and check tables.
 
-listfix_dir = os.path.dirname(os.path.realpath(__file__))
 db = DB(listfix_dir + "/listfix.sqlite3")
 
 ## Get args

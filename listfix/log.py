@@ -2,13 +2,13 @@ from datetime import datetime
 
 class Log:
 
-	def __init__(self):
-		self.log_file = "/tmp/listfix_log.txt"
+	def __init__(self, path):
+		self.path = path
 
 	def write(self, type, txt):
 		txt = txt.rstrip()
 		date = datetime.now()
-		f = open(self.log_file, "a")
+		f = open(self.path, "a")
 		f.write(f"[{type}] {date}, {txt}\n")
 		f.close()
 
