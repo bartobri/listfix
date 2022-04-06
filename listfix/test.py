@@ -3,7 +3,7 @@ import os
 import listfix
 
 from os.path import exists
-from listfix import DB
+from listfix import DB, Log
 
 class Test(unittest.TestCase):
 
@@ -12,9 +12,16 @@ class Test(unittest.TestCase):
         unittest.TextTestRunner().run(suite)
 
     def setUp(self):
+
+        ## db setup
         self.db_name = "/tmp/test.sqlite3"
         if (exists(self.db_name)):
             os.remove(self.db_name)
+
+        ## log setup
+        self.log_name = "/tmp/test.log"
+        if (exists(self.log_name)):
+            os.remove(self.log_name)
 
     def test_db(self):
 
@@ -80,4 +87,40 @@ class Test(unittest.TestCase):
         db.close()
         os.remove(self.db_name)
 
+    def test_log(self):
 
+        test_type = "TEST"
+        test_text = "This is a test"
+        log = Log(self.log_name)
+
+        ## write()
+        log.write(test_type, test_text)
+        f = open(self.log_name, "r")
+        last_line = f.readlines()[-1]
+        self.assertEqual(last_line[0:6], "[" + test_type + "]")
+        self.assertEqual(last_line[-15:-1], test_text)
+        f.close()
+
+        ## info()
+        log.info(test_text)
+        f = open(self.log_name, "r")
+        last_line = f.readlines()[-1]
+        self.assertEqual(last_line[0:6], "[INFO]")
+        self.assertEqual(last_line[-15:-1], test_text)
+        f.close()
+
+        ## error()
+        log.error(test_text)
+        f = open(self.log_name, "r")
+        last_line = f.readlines()[-1]
+        self.assertEqual(last_line[0:7], "[ERROR]")
+        self.assertEqual(last_line[-15:-1], test_text)
+        f.close()
+
+        ## debug()
+        log.debug(test_text)
+        f = open(self.log_name, "r")
+        last_line = f.readlines()[-1]
+        self.assertEqual(last_line[0:7], "[DEBUG]")
+        self.assertEqual(last_line[-15:-1], test_text)
+        f.close()
