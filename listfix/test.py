@@ -3,7 +3,7 @@ import os
 import listfix
 
 from os.path import exists
-from listfix import DB, Log
+from listfix import DB, Log, Email
 
 class Test(unittest.TestCase):
 
@@ -124,3 +124,52 @@ class Test(unittest.TestCase):
         self.assertEqual(last_line[0:7], "[DEBUG]")
         self.assertEqual(last_line[-15:-1], test_text)
         f.close()
+
+    def test_email(self):
+
+        sender_email = "bartobrian@gmail.com"
+        sender_name  = "Brian Barto"
+
+        headers_keep = []
+        headers_strip = []
+        headers_strip.append(f"From: \"{sender_name}\" <{sender_email}>\n")
+        headers_keep.append("To: <test@cityviewgr.com>\n")
+        headers_keep.append("Subject: This is a test\n")
+        headers_keep.append("Content-Type: multipart/alternative;\n")
+        headers_keep.append("        boundary=\"----=_NextPart_000_068F_01D83485.A98F86C0\"\n")
+        headers_strip.append("Auto-Submitted: auto-replied\n")
+        headers_strip.append("Gar: gar\n")
+
+        content = []
+        content.extend(headers_keep)
+        content.extend(headers_strip)
+        content.append("\n")
+        content.append("Body content line 1, This is a test email\n")
+        content.append("Body content line 2, This is a test email\n")
+        email = Email(content)
+
+        ## get_content()
+        for i, line in enumerate(email.get_content()):
+            self.assertEqual(content[i], line)
+
+        ## get_headers()
+        self.assertEqual(len(email.get_headers()), len(headers_keep) + len(headers_strip))
+
+        ## get_header()
+        self.assertEqual(email.get_header("From"), headers_strip[0].rstrip())
+        self.assertEqual(email.get_header("To"), headers_keep[0].rstrip())
+        self.assertEqual(email.get_header("Subject"), headers_keep[1].rstrip())
+        self.assertEqual(email.get_header("Content-Type"), headers_keep[2] + headers_keep[3].rstrip())
+
+        ## get_sender_email()
+        self.assertEqual(email.get_sender_email(), sender_email)
+
+        ## get_sender_name()
+        self.assertEqual(email.get_sender_name(), sender_name)
+
+        ## check_auto_reply()
+        self.assertTrue(email.check_auto_reply())
+
+        ## strip_headers()
+        email.strip_headers(exclude = ["To", "Subject", "Content-[^:]+"])
+        self.assertEqual(len(email.get_headers()), len(headers_keep))
