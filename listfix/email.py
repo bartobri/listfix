@@ -92,7 +92,8 @@ class Email:
 
     def add_header(self, header):
         header = header.rstrip() + "\n"
-        self.content.append(header)
+        header_count = len(self.get_headers())
+        self.content.insert(header_count, header)
 
     def add_header_prepend(self, header):
         header = header.rstrip() + "\n"
