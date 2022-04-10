@@ -173,3 +173,17 @@ class Test(unittest.TestCase):
         ## strip_headers()
         email.strip_headers(exclude = ["To", "Subject", "Content-[^:]+"])
         self.assertEqual(len(email.get_headers()), len(headers_keep))
+
+        ## add_header()
+        new_header = "Gar: gar\n"
+        l = len(email.content)
+        email.add_header(new_header)
+        self.assertEqual(len(email.content), l + 1)
+        self.assertIn(new_header, email.get_headers())
+
+        ## add_header_prepend()
+        new_header = "Gar: gar\n"
+        l = len(email.content)
+        email.add_header_prepend(new_header)
+        self.assertEqual(len(email.content), l + 1)
+        self.assertEqual(email.content[0], new_header)
