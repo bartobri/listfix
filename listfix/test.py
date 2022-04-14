@@ -3,7 +3,7 @@ import os
 import listfix
 
 from os.path import exists
-from listfix import DB, Log, Email
+from listfix import DB, Log, Email, Args
 
 class Test(unittest.TestCase):
 
@@ -187,3 +187,30 @@ class Test(unittest.TestCase):
         email.add_header_prepend(new_header)
         self.assertEqual(len(email.content), l + 1)
         self.assertEqual(email.content[0], new_header)
+
+    def test_args(self):
+
+        list_email = "test_list@test.com"
+        list_name = "Test List"
+        recipient_email = "test_recipient@test.com"
+        recipient_name = "Test Recipient"
+        command = "test_command"
+
+        args1 = Args([None, command, list_email, list_name])
+        args2 = Args([None, command, list_email, recipient_email, recipient_name])
+
+        ## get_command()
+        self.assertEqual(args1.get_command(), command)
+
+        ## get_list_email()
+        self.assertEqual(args1.get_list_email(), list_email)
+
+        ## get_list_name()
+        self.assertEqual(args1.get_list_name(), list_name)
+
+        ## get_recipient_email()
+        self.assertEqual(args2.get_recipient_email(), recipient_email)
+
+        ## get_recipient_name()
+        self.assertEqual(args2.get_recipient_name(), recipient_name)
+
