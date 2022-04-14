@@ -1,5 +1,4 @@
 import sys
-from .log import Log
 
 class Errors:
 
