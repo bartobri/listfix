@@ -13,7 +13,7 @@ log = Log(listfix_dir + "/listfix.log")
 er = Errors(log, debug=True)
 er.set_exception_handler()
 
-db = DB(listfix_dir + "/listfix.sqlite3")
+db = DB(listfix_dir + "/listfix.json")
 
 args = Args(sys.argv)
 command = args.get_command()
@@ -101,4 +101,4 @@ else:
 
 ## Disconnect from DB
 
-db.close()
+db.save()
