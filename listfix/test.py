@@ -115,13 +115,13 @@ class Test(unittest.TestCase):
 
     def test_email(self):
 
-        sender_email = "bartobrian@gmail.com"
-        sender_name  = "Brian Barto"
+        sender_email = "sender@test.com"
+        sender_name  = "Test Name"
 
         headers_keep = []
         headers_strip = []
         headers_strip.append(f"From: \"{sender_name}\" <{sender_email}>\n")
-        headers_keep.append("To: <test@cityviewgr.com>\n")
+        headers_keep.append("To: <list@test.com>\n")
         headers_keep.append("Subject: This is a test\n")
         headers_keep.append("Content-Type: multipart/alternative;\n")
         headers_keep.append("        boundary=\"----=_NextPart_000_068F_01D83485.A98F86C0\"\n")
@@ -178,10 +178,10 @@ class Test(unittest.TestCase):
 
     def test_args(self):
 
-        list_email = "test_list@test.com"
-        list_name = "Test List"
-        recipient_email = "test_recipient@test.com"
-        recipient_name = "Test Recipient"
+        list_email = "list@test.com"
+        list_name = "List Name"
+        recipient_email = "recipient@test.com"
+        recipient_name = "Recipient Name"
         command = "test_command"
 
         args1 = Args([None, command, list_email, list_name])
