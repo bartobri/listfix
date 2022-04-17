@@ -122,4 +122,62 @@ Postfix Integration
 -------------------
 
 These instructions assume you have the postfix email server set up on a unix or
-linux system and you have virtual domain settings enabled.
+linux system and you have virtual domain settings enabled. Setting up and
+the postfix email server is not within scope for these instructions.
+
+#### Configure virtual_alias_maps
+
+Confirm that the virtual_alias_maps configuration setting exists in the postfix
+main.cf config file. If it does not exist, you will have to add it. A common
+setting looks something like this:
+
+```
+virtual_alias_maps = hash:/etc/postfix/virtual
+```
+
+Next add your email list(s) to the file (or resource) that if configured for
+virtual_alias_maps. Open this file and add a new line for each email list you
+want to manage via listfix. Each new line should consist of two parts. The first
+part is the email address for the list. The second part is a unique id. You can
+make the unique id anything you want, but each list must have its own unique id
+and it must conform to system userid character standards. It also can not match
+any userid on the system. See the below example:
+
+```
+everyone@smith-family.com list-smith-family
+```
+
+After you save the changes you will need to rebuild your virtual alias database
+and restart postfix:
+
+```
+sudo postmap /etc/postfix/virtual
+sudo service postfix restart
+```
+
+#### Configure /etc/aliases
+
+Next you need to add an entry to the /etc/aliases file for each unique id you
+added to the postfix virtual_alias_maps file. Each entry should start with the
+unique id, followed by a colon and space, and the a command that pipes data
+to listfix. You should be sure to use the 'filter' command for listfix followed
+by the email address of the list that corresponds to the unique id. See the
+example below:
+
+```
+list-smith-family: "| /path/to/listfix.py filter everyone@smith-family.com"
+```
+
+After saving the changes you will need to rebuild the aliases database:
+
+```
+sudo newaliases
+```
+
+Now postfix will pipe emails through listfix when it receives an incoming 
+email addressed to one of the addresses configured in postfix's virtual
+alias maps. Postfix will then replicate the contents of the email to all the
+recipients for the email list.
+
+
+
