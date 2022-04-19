@@ -25,6 +25,12 @@ Table of Contents
 
 1. [Download](#download)
 2. [Usage](#usage)
+    * [Create a new email list](#create-a-new-email-list)
+    * [List all email lists](#list-all-email-lists)
+    * [Add a recipient to an email list](#add-a-recipient-to-an-email-list)
+    * [List all recipients in an email list](#list-all-recipients-in-an-email-list)
+    * [Remove a recipient in an email list](#remove-a-recipient-in-an-email-list)
+    * [Destroy an email list](#destroy-an-email-list)
 3. [Postfix Integration](#postfix-integration)
 4. [License](#license)
 5. [Tips](#tips)
@@ -53,7 +59,7 @@ the following commands to create and manage your email list database.
 
 We'll be using the example everyone@smith-family.com for our email list address.
 
-#### Create a new email list:
+#### Create a new email list
 
 Usage: `listfix.py create <email_list_address> <email_list_name>`
 
@@ -63,7 +69,7 @@ New list (everyone@smith-family.com) added.
 $
 ```
 
-#### List all email lists:
+#### List all email lists
 
 Usage: `listfix.py lists`
 
@@ -73,7 +79,7 @@ everyone@smith-family.com (Smith Family)
 $
 ```
 
-#### Add a recipient to an email list:
+#### Add a recipient to an email list
 
 Usage: `listfix.py add <email_list_address> <recipient_address> <recipient_name>`
 
@@ -86,7 +92,7 @@ $ ./listfix.py add everyone@smith-family.com me@example.com "Joe Smith"
 New recipient (me@example.com) added to list (everyone@smith-family.com)
 ```
 
-#### List all recipients in an email list:
+#### List all recipients in an email list
 
 Usage: `listfix.py dump <email_list_address>`
 
@@ -98,7 +104,7 @@ me@example.com (Joe Smith)
 $
 ```
 
-#### Remove a recipient in an email list:
+#### Remove a recipient in an email list
 
 Usage: `listfix.py remove <email_list_address> <recipient_address>`
 
@@ -108,7 +114,7 @@ Recipient (mom@example.com) removed from list (everyone@smith-family.com)
 $
 ```
 
-#### Destroy an email list:
+#### Destroy an email list
 
 Usage: `listfix.py destroy <email_list_address>`
 
