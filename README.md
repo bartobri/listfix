@@ -187,5 +187,10 @@ email addressed to one of the addresses configured in postfix's virtual
 alias maps. Postfix will then replicate the contents of the email to all the
 recipients for the email list.
 
+License
+-------
 
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License. See [LICENSE](LICENSE) for
+more details.
 
