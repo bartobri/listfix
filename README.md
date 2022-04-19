@@ -12,18 +12,18 @@ command line interface (CLI). Integration with the postfix email server is
 generally only a matter of a couple simple configuration changes (this assumes
 you already have postfix installed and configured to send and receive email).
 
-When integrated, postfix will hand off emails to listfix that are addressed to
-email addresses that you have configured for listfix. Listfix will then
-replicate the email by modifying the headers (most importantly, the 'To' header)
-and resubmitting a copy back to postfix for each recipient stored in its
-database. Postfix will then deliver the email to each recipient.
+Once integrated, postfix will hand off emails to listfix if the recipient is
+an address that is configured in listfix as an email list. Listfix will then
+filter and/or modify the headers (most importantly, the 'To' header), and
+resubmit an new email back to postfix for each recipient stored in its database.
+Postfix will then deliver the new email to each recipient.
 
 Listfix does some rewriting of the headers before it replicates an email to the
 recipients. Since it is creating a new email, most of the original email
 headers are no longer useful and are stripped away. Some of the original headers
 are kept, such as 'To', 'Cc', 'Subject', and certain content related headers
 that are required to maintain the integrity of a multipart email body. The
-'From' header is readdresses so that the it contains the same user@domain as the
+'From' header is readdressed so that it contains the same user@domain as the
 email list itself. This is necessary to avoid emails being flagged as spam, 
 because it is almost a certainty that your email server is not listed as an
 official sender for the domain name of the original 'From' address.
