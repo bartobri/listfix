@@ -32,6 +32,8 @@ Table of Contents
     * [Remove a recipient in an email list](#remove-a-recipient-in-an-email-list)
     * [Destroy an email list](#destroy-an-email-list)
 3. [Postfix Integration](#postfix-integration)
+    * [Configure virtual_alias_maps](#configure-virtual_alias_maps)
+    * [Configure /etc/aliases](#configure-etcaliases)
 4. [License](#license)
 5. [Tips](#tips)
 
