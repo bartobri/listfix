@@ -46,6 +46,7 @@ Table of Contents
 3. [Postfix Integration](#postfix-integration)
     * [Configure virtual_alias_maps](#configure-virtual_alias_maps)
     * [Configure /etc/aliases](#configure-etcaliases)
+    * [Log and Database Permissions](#log-and-database-permissions)
 4. [License](#license)
 5. [Tips](#tips)
 
