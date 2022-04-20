@@ -200,6 +200,38 @@ email addressed to one of the addresses configured in postfix's virtual
 alias maps. Postfix will then replicate the contents of the email to all the
 recipients for the email list.
 
+#### Log and Database Permissions
+
+Change to the directory that listfix.py resides in. This is the same directory
+that listfix creates it database and log files. You will need to change
+permissions for both of these files so postfix's delivery agent can write to
+them. By default, this is the 'nobody' user.
+
+##### listfix.json
+
+If you have created an email list per the instructions above, you should see the
+file listfix.json, which is the database file. Change the permissions to 664 so
+that it is both owner and group writable. Next change the group to 'nogroup'
+which is the group for the default user 'nobody'. This will allow the user 
+'nobody' to write to this file.
+
+```
+chmod 664 listfix.json
+sudo chown brian:nogroup listfix.json
+```
+
+##### listfix.log
+
+If you made any errors while creating the database, you will also see the file
+listfix.log. If that file does not exist, create it and leave it empty. Next,
+make teh same permission changes to this file so that the user 'nobody' can
+write to it.
+
+```
+chmod 664 listfix.log
+sudo chown brian:nogroup listfix.log
+```
+
 License
 -------
 
