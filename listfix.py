@@ -10,7 +10,7 @@ listfix_dir = os.path.dirname(os.path.realpath(__file__))
 
 log = Log(listfix_dir + "/listfix.log")
 
-er = Errors(log, debug=True)
+er = Errors(log, debug=False)
 er.set_exception_handler()
 
 db = DB(listfix_dir + "/listfix.json")
