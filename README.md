@@ -217,8 +217,8 @@ which is the group for the default user 'nobody'. This will allow the user
 'nobody' to write to this file.
 
 ```
-chmod 664 listfix.json
-sudo chown brian:nogroup listfix.json
+$ chmod 664 listfix.json
+$ sudo chown brian:nogroup listfix.json
 ```
 
 ##### listfix.log
@@ -229,8 +229,8 @@ make teh same permission changes to this file so that the user 'nobody' can
 write to it.
 
 ```
-chmod 664 listfix.log
-sudo chown brian:nogroup listfix.log
+$ chmod 664 listfix.log
+$ sudo chown brian:nogroup listfix.log
 ```
 
 License
