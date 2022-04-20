@@ -218,7 +218,7 @@ which is the group for the default user 'nobody'. This will allow the user
 
 ```
 $ chmod 664 listfix.json
-$ sudo chown brian:nogroup listfix.json
+$ sudo chown :nogroup listfix.json
 ```
 
 ##### listfix.log
@@ -230,7 +230,7 @@ write to it.
 
 ```
 $ chmod 664 listfix.log
-$ sudo chown brian:nogroup listfix.log
+$ sudo chown :nogroup listfix.log
 ```
 
 License
