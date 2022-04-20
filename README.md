@@ -172,8 +172,8 @@ After you save the changes you will need to rebuild your virtual alias database
 and restart postfix:
 
 ```
-sudo postmap /etc/postfix/virtual
-sudo service postfix restart
+$ sudo postmap /etc/postfix/virtual
+$ sudo service postfix restart
 ```
 
 #### Configure /etc/aliases
@@ -192,7 +192,7 @@ list-smith-family: "| /path/to/listfix.py filter everyone@smith-family.com"
 After saving the changes you will need to rebuild the aliases database:
 
 ```
-sudo newaliases
+$ sudo newaliases
 ```
 
 Now postfix will pipe emails through listfix when it receives an incoming 
