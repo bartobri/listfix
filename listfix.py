@@ -99,6 +99,6 @@ elif (command == "test"):
 else:
     raise ValueError(f"Unknown command: {command}")
 
-## Disconnect from DB
+## Save the state of the DB
 
 db.save()
