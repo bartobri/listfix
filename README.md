@@ -194,14 +194,14 @@ virtual alias maps.
 
 #### Log and Database Permissions
 
-When postfix hands off an email to listfix, it executes the listfix script in
-the process. The userid that postfix uses when it executes listfix needs to
+When postfix hands off an email to listfix, it simultaneously executes the
+listfix script. The userid that postfix uses when it executes listfix needs to
 have read/write access to the listfix log and database files. Until you grant
 this access, listfix will likely generate read/write errors and will not
 function as expected.
 
 Change to the directory that listfix.py resides in. This is the same directory
-where listfix creates its database and log files. You should see one of both of
+where listfix creates its database and log files. You should see one or both of
 these files.
 
 ##### listfix.json
