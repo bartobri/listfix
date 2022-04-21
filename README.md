@@ -3,30 +3,20 @@
 Listfix
 =======
 
-Listfix is a simple email list manager for the postfix email server. It is
+Listfix is an email list manager for the postfix email server. It is
 designed with minimal features to be quick to set up, easy to integrate with
 postfix, and simple to create and administer lists.
 
 Listfix allows you to create and manage multiple email lists through a simple
 command line interface (CLI). Integration with the postfix email server is
-generally only a matter of a couple simple configuration changes (this assumes
+generally only a matter of a couple easy configuration changes (this assumes
 you already have postfix installed and configured to send and receive email).
 
 Once integrated, postfix will hand off emails to listfix if the recipient is
-an address that is configured in listfix as an email list. Listfix will then
-filter and/or modify the headers (most importantly, the 'To' header), and
-resubmit an new email back to postfix for each recipient stored in its database.
+an email list address that is configured in listfix. Listfix will then
+modify the headers (most importantly, the 'To' header), and
+resubmit an new email back to postfix for each recipient in the email list.
 Postfix will then deliver the new email to each recipient.
-
-Listfix does some rewriting of the headers before it replicates an email to the
-recipients. Since it is creating a new email, most of the original email
-headers are no longer useful and are stripped away. Some of the original headers
-are kept, such as 'To', 'Cc', 'Subject', and certain content related headers
-that are required to maintain the integrity of a multipart email body. The
-'From' header is readdressed so that it contains the same user@domain as the
-email list itself. This is necessary to avoid emails being flagged as spam, 
-because it is almost a certainty that your email server is not listed as an
-official sender for the domain name of the original 'From' address.
 
 Listfix uses a json database which allows for simple viewing and direct
 manipulation via your preferred text editor. This json format also allows for
@@ -156,14 +146,16 @@ setting looks something like this:
 virtual_alias_maps = hash:/etc/postfix/virtual
 ```
 
-Next add your email list(s) to the file (or resource) that if configured for
-virtual_alias_maps. If it is configured similarly to the above example, Open
+Next add your email list(s) to the file (or resource) that is configured for
+virtual_alias_maps. If it is configured similarly to the above example, open
 this file and add a new line for each email list you want to manage via listfix.
 Each new line should consist of two parts separated by a space. The first
-part is the email address for the list. The second part is a unique id. You can
-make the unique id anything you want, but each list must have its own unique id
-and it must conform to system userid character requirements. It also can not
-match any userid on the system. See the below example:
+part is the email address for the list. The domain name for this address should
+be one that you have previously configured postfix to receive email for. The
+second part is a unique id. You can make the unique id anything you want, but
+each list must have its own unique id and it must conform to system userid
+character requirements. It also can not match any userid on the system. See the
+below example:
 
 ```
 everyone@smith-family.com list-smith-family
@@ -182,7 +174,7 @@ $ sudo service postfix restart
 Next you need to add an entry to the /etc/aliases file for each unique id you
 added to the postfix virtual_alias_maps file. Each entry should start with the
 unique id, followed by a colon and space, and then a command that pipes data
-to listfix. Be sure to use the 'filter' command for listfix followed
+to listfix. Be sure to use the listfix 'filter' command followed
 by the email address of the list that corresponds to the unique id. See the
 example below:
 
@@ -196,25 +188,29 @@ After saving the changes you will need to rebuild the aliases database:
 $ sudo newaliases
 ```
 
-Now postfix will pipe emails through listfix when it receives an incoming 
-email addressed to one of the addresses configured in postfix's virtual
-alias maps. Postfix will then replicate the contents of the email to all the
-recipients for the email list.
+Now postfix will hand off emails to listfix when it receives an incoming 
+email addressed to one of the email list addresses configured in postfix's
+virtual alias maps.
 
 #### Log and Database Permissions
 
+When postfix hands off an email to listfix, it executes the listfix script in
+the process. The userid that postfix uses when it executes listfix needs to
+have read/write access to the listfix log and database files. Until you grant
+this access, listfix will likely generate read/write errors and will not
+function as expected.
+
 Change to the directory that listfix.py resides in. This is the same directory
-that listfix creates it database and log files. You will need to change
-permissions for both of these files so postfix's delivery agent can write to
-them. By default, this is the 'nobody' user.
+where listfix creates its database and log files. You should see one of both of
+these files.
 
 ##### listfix.json
 
 If you have created an email list per the instructions above, you should see the
 file listfix.json, which is the database file. Change the permissions to 664 so
 that it is both owner and group writable. Next change the group to 'nogroup'
-which is the group for the default user 'nobody'. This will allow the user 
-'nobody' to write to this file.
+which is the group for the postfix default user 'nobody' that it uses for
+handoffs. This will allow the user 'nobody' to write to this file.
 
 ```
 $ chmod 664 listfix.json
@@ -225,13 +221,15 @@ $ sudo chown :nogroup listfix.json
 
 If you made any errors while creating the database, you will also see the file
 listfix.log. If that file does not exist, create it and leave it empty. Next,
-make teh same permission changes to this file so that the user 'nobody' can
+make the same permission changes to this file so that the user 'nobody' can
 write to it.
 
 ```
 $ chmod 664 listfix.log
 $ sudo chown :nogroup listfix.log
 ```
+
+Now you should be able to test listfix and confirm it is working as expected.
 
 License
 -------
