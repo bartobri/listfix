@@ -20,7 +20,7 @@ class Args:
             raise IndexError(f"Missing argument(s) for '{self.command}' command.")
         if (not re_email_arg.match(self.args[2])):
             raise ValueError(f"Invalid argument value: {self.args[2]}")
-        return self.args[2]
+        return self.args[2].lower()
 
     def get_list_name(self):
         if (len(self.args) < 4):
@@ -32,7 +32,7 @@ class Args:
             raise IndexError(f"Missing argument(s) for '{self.command}' command.")
         if (not re_email_arg.match(self.args[3])):
             raise ValueError(f"Invalid argument value: {self.args[3]}")
-        return self.args[3]
+        return self.args[3].lower()
 
     def get_recipient_name(self):
         if (len(self.args) < 5):

@@ -31,6 +31,8 @@ if (command == "filter"):
     sender_email = email_in.get_sender_email()
     sender_name = email_in.get_sender_name()
 
+    sender_email = sender_email.lower()
+
     log.info(f"Email from: {sender_email}")
     log.info(f"Email list: {list_email}")
 
@@ -91,6 +93,10 @@ elif (command == "remove"):
     recipient_email = args.get_recipient_email()
     db.destroy_recipient(list_email, recipient_email)
     print(f"Recipient ({recipient_email}) removed from list ({list_email})")
+
+elif (command == "lower"):
+    db.lower_emails()
+    print(f"Completed.")
 
 elif (command == "test"):
     test = Test()

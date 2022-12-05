@@ -66,6 +66,16 @@ class DB:
             raise ValueError(f"Email list does not exist: {list_email}")
         del self.json[list_email]
 
+    def lower_emails(self):
+        lists = self.get_lists()
+        for x in lists:
+            self.json[x.lower()] = self.json.pop(x)
+        lists = self.get_lists()
+        for x in lists:
+            recipients = self.get_list_recipients(x)
+            for y in recipients:
+                self.json[x]['recipients'][y.lower()] = self.json[x]['recipients'].pop(y)
+
     def save(self):
         f = open(self.path, "w")
         json.dump(self.json, f, indent=4)
