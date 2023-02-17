@@ -38,7 +38,6 @@ Table of Contents
     * [Configure /etc/aliases](#configure-etcaliases)
     * [Log and Database Permissions](#log-and-database-permissions)
 4. [License](#license)
-5. [Tips](#tips)
 
 Download
 --------
@@ -238,7 +237,3 @@ This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License. See [LICENSE](LICENSE) for
 more details.
 
-Tips
-----
-
-[Tips are always appreciated.](https://github.com/bartobri/tips)
